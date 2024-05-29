@@ -2,8 +2,8 @@
   <div class="tableInfo">
     <h3>Users Data</h3>
 
-    <div class="table">
-      <table>
+    <div >
+      <table class="table">
         <thead>
           <tr>
             <th>First Name</th>
@@ -11,24 +11,26 @@
             <th>Mobile</th>
             <th>Address</th>
             <th>DOB</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(user, index) in users" :key="index">
-            <td>{{ user.firstName }}</td>
-            <td>{{ user.lastName }}</td>
-            <td>{{ user.mobile }}</td>
-            <td>{{ user.address }}</td>
-            <td>{{ user.dob }}</td>
+            <td><span>{{ user.firstName }}</span></td>
+            <td><span>{{ user.lastName }}</span></td>
+            <td><span>{{ user.mobile }}</span></td>
+            <td><span>{{ user.address }}</span></td>
+            <td><span>{{ user.dob }}</span></td>
+
             <td>
+              <button class="Edit-button" @click="editUser(user)">Edit</button>
+
               <button
                 class="Delete-button"
                 @click="$emit('delete-user', user.id)"
               >
                 Delete
               </button>
-
-              <button class="Edit-button">Edit</button>
             </td>
           </tr>
         </tbody>
@@ -51,6 +53,10 @@ export default {
     deleteUser(index) {
       this.$emit("delete-user", index);
     },
+
+    editUser(user) {
+      this.$emit("edit-user", user);
+    },
   },
 };
 </script>
@@ -58,7 +64,7 @@ export default {
 
 <style scoped>
 .tableInfo {
-  max-width: 800px;
+  max-width: 950px;
   margin: 20px auto;
 }
 
@@ -66,8 +72,8 @@ export default {
   width:60vw;
 } */
 
-.table table {
-  width: 60vw;
+table.table {
+  width: 100%;
   border-collapse: collapse;
 }
 

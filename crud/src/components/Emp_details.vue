@@ -1,6 +1,7 @@
 <template>
+  <h3>User Form</h3>
   <form class="Emp_data" @submit.prevent="handleSubmit">
-    <div class="FirstName">
+    <div class="FirstName mb-10"> 
       <label type="text">First Name</label>
       <input
         class="first_nameInput"
@@ -10,7 +11,7 @@
       />
     </div>
 
-    <div class="LastName">
+    <div class="LastName mb-10">
       <label type="text">Last Name</label>
       <input
         class="last_nameInput"
@@ -20,12 +21,12 @@
       />
     </div>
 
-    <div class="Dob">
+    <div class="Dob mb-10">
       <label>Date of birth</label>
       <input class="User_dob" type="date" v-model="user.dob" />
     </div>
 
-    <div class="Address">
+    <div class="Address mb-10">
       <label>Address</label>
       <input
         class="User_address"
@@ -35,7 +36,7 @@
       />
     </div>
 
-    <div class="Mobile">
+    <div class="Mobile mb-10">
       <label>Mobile Number</label>
       <input
         class="User_dob"
@@ -45,13 +46,19 @@
       />
     </div>
 
-    <button class="Add">Add User</button>
+    <button class="Add">{{ isEditing ? "Update User" : "Add User" }}</button>
   </form>
 </template>
 
 <script>
 export default {
   name: "User_details",
+  props: {
+    editUser: {
+      type: Object,
+      default: null,
+    },
+  },
   data() {
     return {
       user: {
@@ -61,13 +68,36 @@ export default {
         address: "",
         mobile: "",
       },
+      isEditing: false,
     };
   },
+
+  watch: {
+    editUser: {
+      handler(newVal) {
+        if (newVal) {
+          this.user = { ...newVal };
+          this.isEditing = true;
+        }
+      },
+      immediate: true,
+    },
+  },
+
   methods: {
     handleSubmit() {
-      this.$emit("add-user", { ...this.user });
-      console.log("Form submitted:", this.user);
+      if (this.isEditing) {
+        this.$emit("update-user", { ...this.user });
+        this.isEditing = false;
+      } else {
+        this.$emit("add-user", { ...this.user });
+      }
 
+      console.log("Form submitted:", this.user);
+      this.resetForm();
+    },
+
+    resetForm() {
       this.user = {
         firstName: "",
         lastName: "",
@@ -86,11 +116,12 @@ export default {
   /* margin: auto; */
 }
 
-.FirstName,
+/* .FirstName,
 .LastName,
 .Dob,
 .Address,
-.Mobile {
+.Mobile */
+.mb-10{ 
   margin-bottom: 10px;
 }
 

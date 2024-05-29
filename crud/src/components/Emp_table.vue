@@ -2,7 +2,10 @@
   <div class="tableInfo">
     <h3>Users Data</h3>
 
-    <div >
+    <div>
+      <div v-if="showSuccessMessage" class="success-message">
+        Data updated successfully!
+      </div>
       <table class="table">
         <thead>
           <tr>
@@ -16,19 +19,39 @@
         </thead>
         <tbody>
           <tr v-for="(user, index) in users" :key="index">
-            <td><span>{{ user.firstName }}</span></td>
-            <td><span>{{ user.lastName }}</span></td>
-            <td><span>{{ user.mobile }}</span></td>
-            <td><span>{{ user.address }}</span></td>
-            <td><span>{{ user.dob }}</span></td>
-
             <td>
-              <button class="Edit-button" @click="editUser(user)">Edit</button>
-
+              <span v-if="editIndex !== index">{{ user.firstName }}</span>
+              <input v-else v-model="editableUser.firstName" />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.lastName }}</span>
+              <input v-else v-model="editableUser.lastName" />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.mobile }}</span>
+              <input v-else v-model="editableUser.mobile" />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.address }}</span>
+              <input v-else v-model="editableUser.address" />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.dob }}</span>
+              <input v-else v-model="editableUser.dob" type="date" />
+            </td>
+            <td>
               <button
-                class="Delete-button"
-                @click="$emit('delete-user', user.id)"
+                v-if="editIndex !== index"
+                class="Edit-button"
+                @click="startEditing(index, user)"
               >
+                Edit
+              </button>
+              <button v-else class="Edit-button" @click="saveEdit(index)">
+                Update
+              </button>
+
+              <button class="Delete-button" @click="confirmDelete(user.id)">
                 Delete
               </button>
             </td>
@@ -45,42 +68,95 @@ export default {
   props: {
     users: {
       type: Array,
-      required: true,
+      required: true, 
     },
   },
 
+
+  
+  data() {
+    return {
+      editIndex: null,
+      editableUser: {
+        firstName: "",
+        lastName: "",
+        dob: "",
+        address: "",
+        mobile: "",
+      },
+      // showAlert: false,
+      // showSuccessMessage: false,
+    };
+  },
   methods: {
+    startEditing(index, user) {
+      this.editIndex = index;
+      this.editableUser = { ...user };
+    },
+    saveEdit(index) {
+      this.$emit("update-user", { ...this.editableUser });
+      this.editIndex = null;
+    },
+
     deleteUser(index) {
       this.$emit("delete-user", index);
     },
 
-    editUser(user) {
-      this.$emit("edit-user", user);
+    // deleteItem() {
+    //   if (confirm("Are you sure you want to delete this item?")) {
+    //     this.showAlert = true;
+    //   }
+    // },
+
+    confirmDelete(userId) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        this.$emit("delete-user", userId);
+      }
     },
+    
+
+   
+    // editUser(user) {
+    //   this.$emit("edit-user", user);
+    // },
   },
 };
 </script>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 <style scoped>
 .tableInfo {
+  width: 500px;
   max-width: 950px;
-  margin: 20px auto;
+  overflow: hidden;
+  width: 100%;
 }
-
-/* .table {
-  width:60vw;
-} */
 
 table.table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .table th,
 .table td {
   padding: 8px;
   border-bottom: 1px solid #ddd;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .table th {
@@ -91,6 +167,11 @@ table.table {
 
 .table tr:hover {
   background-color: #f2f2f2;
+}
+
+.table input {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .Delete-button,

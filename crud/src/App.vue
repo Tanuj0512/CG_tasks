@@ -24,16 +24,16 @@ watch(
 );
 
 function addUser(user) {
+  user.id = Date.now();  // Ensure a unique ID for new users
   users.value.push(user);
 }
 
-function deleteUser(index) {
-  users.value.splice(index, 1);
+function deleteUser(userId) {
+  users.value = users.value.filter(user => user.id !== userId);
 }
+//deletr user by id instead of index
 
-function setEditUser(user) {
-  editUser.value = user;
-}
+
 
 function updateUser(updateUser) {
   const index = users.value.findIndex((user) => user.id === updateUser.id);
@@ -47,6 +47,7 @@ function updateUser(updateUser) {
 <template>
   <div class="App">
     <h1>CRUD App</h1>
+   
     <div class="container">
       
       <div class="form">
@@ -63,6 +64,7 @@ function updateUser(updateUser) {
         <User_table
           :users="users"
           @delete-user="deleteUser"
+          @update-user = "updateUser"
           @edit-user="setEditUser"
         />
         <!-- : indicates user is a dynamic value ....'users'array is passed as a prop to 'User-table' -->
@@ -70,6 +72,20 @@ function updateUser(updateUser) {
     </div>
   </div>
 </template>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <style scoped>
 .App[data-v-7a7a37b1] {

@@ -1,29 +1,31 @@
 <template>
   <h3>User Form</h3>
   <form class="Emp_data" @submit.prevent="handleSubmit">
-    <div class="FirstName mb-10"> 
-      <label type="text">First Name</label>
+    <div class="FirstName mb-10">
+      <label type="text">First Name*</label>
       <input
         class="first_nameInput"
         type="text"
         placeholder="Enter your Name..."
         v-model="user.firstName"
+        required
       />
     </div>
 
     <div class="LastName mb-10">
-      <label type="text">Last Name</label>
+      <label type="text">Last Name*</label>
       <input
         class="last_nameInput"
         type="text"
         placeholder="Enter your Name..."
         v-model="user.lastName"
+        required
       />
     </div>
 
     <div class="Dob mb-10">
-      <label>Date of birth</label>
-      <input class="User_dob" type="date" v-model="user.dob" />
+      <label>Date of birth*</label>
+      <input class="User_dob" type="date" v-model="user.dob" required />
     </div>
 
     <div class="Address mb-10">
@@ -33,20 +35,22 @@
         type="text"
         placeholder="Enter your address..."
         v-model="user.address"
+        required
       />
     </div>
 
     <div class="Mobile mb-10">
-      <label>Mobile Number</label>
+      <label>Mobile Number*</label>
       <input
         class="User_dob"
         type="tel"
         placeholder="Enter your mobile number..."
         v-model="user.mobile"
+        required
       />
     </div>
 
-    <button class="Add">{{ isEditing ? "Update User" : "Add User" }}</button>
+    <button class="Add">Add User</button>
   </form>
 </template>
 
@@ -68,7 +72,7 @@ export default {
         address: "",
         mobile: "",
       },
-      isEditing: false,
+      // isEditing: false,
     };
   },
 
@@ -86,12 +90,7 @@ export default {
 
   methods: {
     handleSubmit() {
-      if (this.isEditing) {
-        this.$emit("update-user", { ...this.user });
-        this.isEditing = false;
-      } else {
-        this.$emit("add-user", { ...this.user });
-      }
+      this.$emit("add-user", { ...this.user });
 
       console.log("Form submitted:", this.user);
       this.resetForm();
@@ -110,6 +109,27 @@ export default {
 };
 </script>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <style scoped>
 .Emp_data {
   width: 400px;
@@ -121,7 +141,7 @@ export default {
 .Dob,
 .Address,
 .Mobile */
-.mb-10{ 
+.mb-10 {
   margin-bottom: 10px;
 }
 

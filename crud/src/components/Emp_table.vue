@@ -23,6 +23,8 @@
               <span v-if="editIndex !== index">{{ user.firstName }}</span>
               <input v-else v-model="editableUser.firstName" />
             </td>
+            <!-- editIndex and index are variables used for tracking the index of the row being edited. 
+            If they are not equal, it means that the current row is not being edited. -->
             <td>
               <span v-if="editIndex !== index">{{ user.lastName }}</span>
               <input v-else v-model="editableUser.lastName" />
@@ -39,7 +41,8 @@
               <span v-if="editIndex !== index">{{ user.dob }}</span>
               <input v-else v-model="editableUser.dob" type="date" />
             </td>
-            <td>
+            
+            <td class="buttons-align">
               <button
                 v-if="editIndex !== index"
                 class="Edit-button"
@@ -47,11 +50,24 @@
               >
                 Edit
               </button>
+
               <button v-else class="Edit-button" @click="saveEdit(index)">
                 Update
               </button>
 
-              <button class="Delete-button" @click="confirmDelete(user.id)">
+              <button
+                v-if="editIndex === index"
+                class="Delete-button"
+                @click="cancelEdit"
+              >
+                Cancel
+              </button>
+
+              <button
+                v-if="editIndex !== index"
+                class="Delete-button"
+                @click="confirmDelete(user.id)"
+              >
                 Delete
               </button>
             </td>
@@ -63,62 +79,80 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "User_table",
   props: {
     users: {
       type: Array,
-      required: true, 
+      required: true,
     },
   },
 
-
-  
   data() {
     return {
       editIndex: null,
       editableUser: {
+        id: null,
         firstName: "",
         lastName: "",
         dob: "",
         address: "",
         mobile: "",
       },
-      // showAlert: false,
-      // showSuccessMessage: false,
+      showAlert: false,
+      showSuccessMessage: false,
     };
   },
   methods: {
+    //edit user
     startEditing(index, user) {
       this.editIndex = index;
       this.editableUser = { ...user };
+      this.$emit("edit-user", user);
     },
-    saveEdit(index) {
-      this.$emit("update-user", { ...this.editableUser });
+
+    //update user
+    saveEdit() {
+      axios
+        .put(
+          `/api/users/${this.editableUser.id}`,
+          this.editableUser
+        )
+        .then(() => {
+          this.$emit("update-user", { ...this.editableUser });
+          this.editIndex = null;
+        })
+        .catch((error) => {
+          console.error("Error updating user:", error);
+        });
+    },
+
+    //cancel edit
+    cancelEdit() {
       this.editIndex = null;
+      this.editableUser = {
+        id: null,
+        firstName: "",
+        lastName: "",
+        dob: "",
+        address: "",
+        mobile: "",
+      };
     },
 
-    deleteUser(index) {
-      this.$emit("delete-user", index);
-    },
-
-    // deleteItem() {
-    //   if (confirm("Are you sure you want to delete this item?")) {
-    //     this.showAlert = true;
-    //   }
-    // },
-
-    confirmDelete(userId) {
+    //delete user
+    async confirmDelete(userId) {
       if (confirm("Are you sure you want to delete this user?")) {
-        this.$emit("delete-user", userId);
+        try {
+          await axios.delete(`/api/users/${userId}`);
+          this.$emit("delete-user", userId);
+        } catch (error) {
+          console.error("Error deleting user:", error);
+        }
       }
     },
-    
-
-   
-    // editUser(user) {
-    //   this.$emit("edit-user", user);
-    // },
   },
 };
 </script>
@@ -139,30 +173,28 @@ export default {
 
 <style scoped>
 .tableInfo {
-  width: 500px;
-  max-width: 950px;
-  overflow: hidden;
   width: 100%;
+  max-width: 950px;
+  margin: 0 auto;
 }
 
 table.table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  margin-top: 20px;
 }
 
 .table th,
 .table td {
-  padding: 8px;
+  padding: 12px 15px;
   border-bottom: 1px solid #ddd;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: left;
 }
 
 .table th {
-  background-color: #f2f2f2;
+  background-color: #4caf50;
+  color: white;
   font-weight: bold;
-  text-align: left;
 }
 
 .table tr:hover {
@@ -171,15 +203,32 @@ table.table {
 
 .table input {
   width: 100%;
+  padding: 8px;
+  margin: 4px 0;
   box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.table input:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+.buttons-align {
+  display: flex;
+  gap: 10px;
 }
 
 .Delete-button,
-.Edit-button {
-  padding: 6px 12px;
-  margin-right: 5px;
+.Edit-button,
+.Cancel-button {
+  padding: 8px 12px;
   border: none;
   cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
 .Delete-button {
@@ -198,5 +247,14 @@ table.table {
 
 .Edit-button:hover {
   background-color: #45a049;
+}
+
+.Cancel-button {
+  background-color: #ff9800;
+  color: white;
+}
+
+.Cancel-button:hover {
+  background-color: #fb8c00;
 }
 </style>

@@ -1,60 +1,75 @@
 <template>
-  <h3>User Form</h3>
-  <form class="Emp_data" @submit.prevent="handleSubmit">
-    <div class="FirstName mb-10">
-      <label type="text">First Name*</label>
-      <input
-        class="first_nameInput"
-        type="text"
-        placeholder="Enter your Name..."
-        v-model="user.firstName"
-        required
-      />
-    </div>
+  <div>
+    <h3>User Form</h3>
+    <form class="user-form" @submit.prevent="handleSubmit">
+      <div class="form-group">
+        <label for="firstName">First Name <span class="req">*</span></label>
+        <input
+          id="firstName"
+          class="form-control"
+          type="text"
+          placeholder="Enter your First Name"
+          v-model="user.firstName"
+          required
+        />
+      </div>
 
-    <div class="LastName mb-10">
-      <label type="text">Last Name*</label>
-      <input
-        class="last_nameInput"
-        type="text"
-        placeholder="Enter your Name..."
-        v-model="user.lastName"
-        required
-      />
-    </div>
+      <div class="form-group">
+        <label for="lastName">Last Name <span class="req">*</span></label>
+        <input
+          id="lastName"
+          class="form-control"
+          type="text"
+          placeholder="Enter your Last Name"
+          v-model="user.lastName"
+          required
+        />
+      </div>
 
-    <div class="Dob mb-10">
-      <label>Date of birth*</label>
-      <input class="User_dob" type="date" v-model="user.dob" required />
-    </div>
+      <div class="form-group">
+        <label for="dob">Date of Birth <span class="req">*</span></label>
+        <input
+          id="dob"
+          class="form-control"
+          type="date"
+          v-model="user.dob"
+          required
+        />
+      </div>
 
-    <div class="Address mb-10">
-      <label>Address</label>
-      <input
-        class="User_address"
-        type="text"
-        placeholder="Enter your address..."
-        v-model="user.address"
-        required
-      />
-    </div>
+      <div class="form-group">
+        <label for="address">Address <span class="req">*</span></label>
+        <input
+          id="address"
+          class="form-control"
+          type="text"
+          placeholder="Enter your address"
+          v-model="user.address"
+          required
+        />
+      </div>
 
-    <div class="Mobile mb-10">
-      <label>Mobile Number*</label>
-      <input
-        class="User_dob"
-        type="tel"
-        placeholder="Enter your mobile number..."
-        v-model="user.mobile"
-        required
-      />
-    </div>
-
-    <button class="Add">Add User</button>
-  </form>
+      <div class="form-group">
+        <label for="mobile">Mobile Number <span class="req">*</span></label>
+        <input
+          id="mobile"
+          class="form-control"
+          type="tel"
+          placeholder="Enter your mobile number"
+          v-model="user.mobile"
+          required
+        />
+      </div>
+      <div class="form-but">
+        <button class="btn btn-primary">Add User</button>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "User_details",
   props: {
@@ -72,7 +87,8 @@ export default {
         address: "",
         mobile: "",
       },
-      // isEditing: false,
+      errorMessage: "",
+      //to store error messages
     };
   },
 
@@ -89,11 +105,26 @@ export default {
   },
 
   methods: {
-    handleSubmit() {
-      this.$emit("add-user", { ...this.user });
-
-      console.log("Form submitted:", this.user);
-      this.resetForm();
+    async handleSubmit() {
+      try {
+        if (this.editUser) {
+          await axios.put(
+            `http://localhost:3000/users/${this.user.id}`,
+            this.user
+          );
+          this.$emit("update-user", { ...this.user });
+        } else {
+          const response = await axios.post(
+            "/api/users",
+            this.user
+          );
+          this.$emit("add-user", response.data);
+        }
+        console.log("Form submitted:", this.user);
+        this.resetForm();
+      } catch (error) {
+        console.error("Error submitting form:", error);
+      }
     },
 
     resetForm() {
@@ -104,45 +135,20 @@ export default {
         address: "",
         mobile: "",
       };
+      this.errorMessage = "";
     },
   },
 };
 </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <style scoped>
-.Emp_data {
-  width: 400px;
+.user-form {
+  max-width: 400px;
   /* margin: auto; */
 }
 
-/* .FirstName,
-.LastName,
-.Dob,
-.Address,
-.Mobile */
-.mb-10 {
-  margin-bottom: 10px;
+.form-group {
+  margin-bottom: 20px;
 }
 
 label {
@@ -150,24 +156,30 @@ label {
   margin-bottom: 5px;
 }
 
-input[type="text"],
-input[type="date"],
-input[type="tel"] {
-  width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
+.req {
+  color: red;
 }
 
-button.Add {
+.form-control {
   width: 100%;
   padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.btn {
+  padding: 10px 20px;
   background-color: #4caf50;
   color: white;
   border: none;
+  border-radius: 5px;
   cursor: pointer;
 }
 
-button.Add:hover {
+.btn:hover {
   background-color: #45a049;
 }
+
+
+
 </style>

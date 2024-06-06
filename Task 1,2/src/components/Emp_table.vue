@@ -1,7 +1,18 @@
 <template>
   <div class="tableInfo">
     <h3>Users Data</h3>
-
+    <div class="table-header">
+      <div class="range-setter">
+        <label for="range">Seect range:</label>
+        <select name="range" id="cars">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+      <div class="search-bar">search bar</div>
+    </div>
     <div>
       <div v-if="showSuccessMessage" class="success-message">
         Data updated successfully!
@@ -41,7 +52,7 @@
               <span v-if="editIndex !== index">{{ user.dob }}</span>
               <input v-else v-model="editableUser.dob" type="date" />
             </td>
-            
+
             <td class="buttons-align">
               <button
                 v-if="editIndex !== index"
@@ -116,10 +127,7 @@ export default {
     //update user
     saveEdit() {
       axios
-        .put(
-          `/api/users/${this.editableUser.id}`,
-          this.editableUser
-        )
+        .put(`/api/users/${this.editableUser.id}`, this.editableUser)
         .then(() => {
           this.$emit("update-user", { ...this.editableUser });
           this.editIndex = null;
@@ -146,7 +154,7 @@ export default {
     async confirmDelete(userId) {
       if (confirm("Are you sure you want to delete this user?")) {
         try {
-          await axios.delete(`/api/users/${userId}`);
+          await axios.delete(`api/users/${userId}`);
           this.$emit("delete-user", userId);
         } catch (error) {
           console.error("Error deleting user:", error);

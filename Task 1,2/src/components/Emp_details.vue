@@ -109,7 +109,7 @@ export default {
       try {
         if (this.editUser) {
           await axios.put(
-            `http://localhost:3000/users/${this.user.id}`,
+            `/api/users/${this.user.id}`,
             this.user
           );
           this.$emit("update-user", { ...this.user });

@@ -63,3 +63,18 @@ The return statement ensures that the request handling stops here if there are e
 Proceeding to the Next Middleware:
 
 If there are no validation errors, the next() function is called, passing control to the next middleware function or route handler.
+
+
+
+
+//search
+
+The searchUsers method allows the component to dynamically update the displayed list of users based on the search term entered by the user. Here's a summarized step-by-step explanation:
+
+Check if there is a search term.
+If there is a search term:
+    Make an API request to fetch the users that match the search term.
+    Update filteredUsers with the search results.
+If there is no search term:
+    Reset filteredUsers to the original list of users.
+Log any errors that occur during the API request.

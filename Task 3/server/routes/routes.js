@@ -6,16 +6,21 @@ const {
   updateUser,
   deleteUser,
   search,
+  pagenation,
+  sorting,
 } = require("../controllers/controllers");
-const { validateUser } = require("../middleware/validate");
+const { validateUser } = require("../validation/validation");
 
 //add users, get user
 router.route("/users").post(validateUser, addUser).get(getAllUsers);
-
+//update and delete user by id
+router.route("/users/:id").put( updateUser).delete(deleteUser);
 //search
 router.get("/users/search", search);
+//sort
+router.get("/users/sort",sorting);
+//pagenation
+router.get("/users/items", pagenation);
 
-//update and delete user by id
-router.route("/users/:id").put(validateUser, updateUser).delete(deleteUser);
 
 module.exports = router;

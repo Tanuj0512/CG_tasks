@@ -69,6 +69,7 @@
 
 <script>
 import axios from "axios";
+// import { validateUser } from "../../server/validation/validation";
 
 export default {
   name: "UserForm",
@@ -86,8 +87,8 @@ export default {
         dob: "",
         address: "",
         mobile: "",
+        // errorMessages : {},
       },
-      errorMessage: "",
     };
   },
   watch: {
@@ -104,6 +105,18 @@ export default {
   },
   methods: {
     async handleSubmit() {
+    //  // validate user
+    //   const validationOnFields = validateUser(this.user);
+    //   //if error in fields
+    //   if (validationOnFields.error){
+    //     this.errorMessages = validationOnFields.error.details.reduce((acc, curr) => {
+    //       acc[curr.context.key] =  curr.message;
+    //       return acc;
+    //     },{});
+    //     return; //stop form submission
+    //   }
+
+      //if no erorr submit the form
       try {
         if (this.editUser) {
           await axios.put(`/api/users/${this.user.id}`, this.user);
@@ -116,6 +129,9 @@ export default {
       } catch (error) {
         console.error("Error submitting form:", error);
       }
+
+     
+      
     },
     resetForm() {
       this.user = {
@@ -134,7 +150,7 @@ export default {
 <style scoped>
 .user-form {
   max-width: 400px;
-  /* margin: auto; */
+  margin: 0 auto;
 }
 
 .form-group {
@@ -151,10 +167,10 @@ label {
 }
 
 .form-control {
-  width: 100%;
+  width: calc(100% - 24px); /* Adjusted width to match the table input width */
   padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 .btn {
@@ -162,7 +178,7 @@ label {
   background-color: #4caf50;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
 }
 

@@ -1,3 +1,4 @@
+const db = require('../config/db')
 //add user query 
 
 const addUserQuery = {
@@ -16,7 +17,16 @@ const deleteUserQuery = {
 deleteUser : "DELETE FROM users WHERE id = ?"
 };
 
-const searchQuery = {
-  searchItem : "SELECT * FROM users WHERE firstName LIKE ? OR lastName LIKE ? OR dob LIKE ? OR address LIKE ? OR mobile LIKE ?"
+const setSearchQuery = {
+  searchQuery : "SELECT * FROM users WHERE firstName LIKE ? OR lastName LIKE ? OR dob LIKE ? OR address LIKE ? OR mobile LIKE ?"
 }
-module.exports = {addUserQuery,getUserQuery, deleteUserQuery, updateUserQuery,searchQuery}
+
+const setSortQuery = (sortBy, order, callback) => {
+  const sortQuery = `SELECT * FROM users ORDER BY ${sortBy} ${order}`;
+  db.query(sortQuery, callback);
+};
+
+const setPagenation = {
+  pagegenation : "SELECT * FROM users LIMIT ? OFFSET ?"
+}
+module.exports = {addUserQuery,getUserQuery, deleteUserQuery, updateUserQuery, setSearchQuery, setPagenation, setSortQuery: setSortQuery}

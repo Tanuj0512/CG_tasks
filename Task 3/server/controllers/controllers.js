@@ -5,9 +5,11 @@ const {
   getUserQuery,
   updateUserQuery,
   deleteUserQuery,
-  searchQuery,
+  setSearchQuery,
+  setPagenation,
+  setSortQuery,
 } = require("../services/queries");
-const { query } = require("express");
+// const { db } = require("express");
 
 //route to add a new user
 const addUser = (req, res) => {
@@ -93,28 +95,86 @@ const deleteUser = (req, res) => {
   });
 };
 
-
-//search item 
+//search item
 const search = (req, res) => {
-const searchTerm = req.query.term;//gets the value of key-value pair at the end of URL
-if (!searchTerm){
-  return res.status(400)
-  .json({
-    error: "Search term is required"
-  });
-}
+  const searchTerm = req.query.term; //gets the value of key-value pair at the end of URL
+  if (!searchTerm) {
+    return res.status(400).json({
+      error: "Search term is required",
+    });
+  }
 
-const sql  = searchQuery.searchItem;
+  const sql = setSearchQuery.searchQuery;
 
-const searchValue = `%${searchTerm}%`;
+  const searchValue = `%${searchTerm}%`;
 
-db.query(sql,[searchValue, searchValue, searchValue, searchValue, searchValue],
-  (err, results) => {
-    if(err){
-      console.error("Executin search query", err);
-      return res.status(500).json({error: "Internal sever error"});
+  db.query(
+    sql,
+    [searchValue, searchValue, searchValue, searchValue, searchValue],
+    (err, results) => {
+      if (err) {
+        console.error("Executin search query", err);
+        return res.status(500).json({ error: "Internal sever error" });
+      }
+      res.json(results);
+    }
+  );
+};
+
+//sorting
+const sorting = (req, res) => {
+  const sortBy = req.query.sortBy;
+  const order = req.query.order === "desc" ? "DESC" : "ASC";
+
+  const validSortBy = [
+    "firstName",
+    "lastName",
+    "dob",
+    "address",
+    "mobile",
+    "id",
+  ];
+
+  if (!validSortBy.includes(sortBy)) {
+    return res.status(400).send("Invalid sortBy parameter");
+  }
+
+  if (order !== "ASC" && order !== "DESC") {
+    return res.status(400).send("Invalid order parameter");
+  }
+  
+  setSortQuery(sortBy, order, (err, results) => {
+    if (err) {
+      return res.status(500).send(err);
     }
     res.json(results);
-  }); 
+  });
 };
-module.exports = { addUser, getAllUsers, updateUser, deleteUser, search };
+
+//pagenation
+const pagenation = (req, res) => {
+  const pages = parseInt(req.query.page);
+  const items = parseInt(req.query.items); //parseInt - to convert string to number, in URL "?page=2&items=10" 2 and 10 will be considered as string with parseInt
+  const offset = (pages - 1) * items; //skip the no. of entries before starting to new page
+
+  const sql = setPagenation.pagegenation;
+
+  db.query(sql, [items, offset], (err, results) => {
+    if (err) {
+      res.status(500).json({ error: "Items not found" });
+      console.log(err);
+    } else {
+      res.json(results);
+    }
+  });
+};
+
+module.exports = {
+  addUser,
+  getAllUsers,
+  updateUser,
+  deleteUser,
+  search,
+  pagenation,
+  sorting,
+};

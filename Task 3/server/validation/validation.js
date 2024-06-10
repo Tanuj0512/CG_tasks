@@ -37,8 +37,8 @@ const userSchema = Joi.object({
     .messages({
       'string.base': `"Address" should be a type of 'text'`,
       'string.empty': `"Address" cannot be an empty field`,
-      'string.min': `"Address" should have a minimum length of {#limit}`,
-      'string.max': `"Address" should have a maximum length of {#limit}`,
+      'string.min': `"Address" should have a minimum length of 3`,
+      'string.max': `"Address" should have a maximum length of 30`,
       'any.required': `"Address" is a required field`
     }),
   mobile: Joi.string()
@@ -49,7 +49,7 @@ const userSchema = Joi.object({
       'string.base': `"Mobile" should be a type of 'text'`,
       'string.empty': `"Mobile" cannot be an empty field`,
       'string.pattern.base': `"Mobile" should only contain digits`,
-      'string.length': `"Mobile" should be exactly {#limit} digits long`,
+      'string.length': `"Mobile" should be exactly 10 digits long`,
       'any.required': `"Mobile" is a required field`
     })
 });
@@ -61,6 +61,7 @@ const validateUser = (req, res, next) => {
     return res.status(400).json({ errors: errorMessages });
   }
   next();
+  res.status(200).json({ message: "Validation successful and user added " });
 };
 
 module.exports = {validateUser};

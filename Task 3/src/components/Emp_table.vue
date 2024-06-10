@@ -2,15 +2,7 @@
   <div class="tableInfo">
     <h3>Users Data</h3>
     <div class="table-header">
-      <div class="range-setter">
-        <label for="range">Select range:</label>
-        <select name="range" id="range" class="select-input">
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-        </select>
-      </div>
+    
       <div class="search-bar">
         <label>Search Bar</label>
         <input
@@ -56,11 +48,19 @@
           <tr v-for="(user, index) in filteredUsers" :key="index">
             <td>
               <span v-if="editIndex !== index">{{ user.firstName }}</span>
-              <input v-else v-model="editableUser.firstName" class="input-field" />
+              <input
+                v-else
+                v-model="editableUser.firstName"
+                class="input-field"
+              />
             </td>
             <td>
               <span v-if="editIndex !== index">{{ user.lastName }}</span>
-              <input v-else v-model="editableUser.lastName" class="input-field" />
+              <input
+                v-else
+                v-model="editableUser.lastName"
+                class="input-field"
+              />
             </td>
             <td>
               <span v-if="editIndex !== index">{{ user.mobile }}</span>
@@ -68,11 +68,20 @@
             </td>
             <td>
               <span v-if="editIndex !== index">{{ user.address }}</span>
-              <input v-else v-model="editableUser.address" class="input-field" />
+              <input
+                v-else
+                v-model="editableUser.address"
+                class="input-field"
+              />
             </td>
             <td>
               <span v-if="editIndex !== index">{{ user.dob }}</span>
-              <input v-else v-model="editableUser.dob" type="date" class="input-field" />
+              <input
+                v-else
+                v-model="editableUser.dob"
+                type="date"
+                class="input-field"
+              />
             </td>
             <td class="buttons-align">
               <button
@@ -103,6 +112,15 @@
           </tr>
         </tbody>
       </table>
+      <div class="pagination-controls">
+        <button @click="prevPage" :disabled="currentPage === 1">
+          Previous
+        </button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button @click="nextPage" :disabled="currentPage === totalPages">
+          Next
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -123,10 +141,14 @@ export default {
       editIndex: null,
       editableUser: {},
       showSuccessMessage: false,
-      searchTerm: "",
-      filteredUsers: this.users,
-      sortField: "firstName",
-      sortOrder: "asc",
+      searchTerm: "", //search
+      filteredUsers: this.users, //sort
+      sortField: "firstName", //sort
+      sortOrder: "asc", //sort
+      currentPage: 1,
+      itemsPerPage: 10,
+      totalItems: 0,
+      totalPages: 0,
     };
   },
 
@@ -135,6 +157,14 @@ export default {
       this.filteredUsers = newUsers;
     },
   }, // Ensure that filteredUsers is updated whenever the users prop changes.
+
+  computed: {
+    paginatedUsers() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredUsers.slice(start, end);
+    },
+  },
 
   methods: {
     // Start editing a user
@@ -205,6 +235,40 @@ export default {
         console.error("Error fetching sorted results:", error);
       }
     },
+
+    //pagenation
+    async fetchUsers() {
+      try {
+        const response = await axios.get("/api/users/items", {
+          params: {//which page and how many itemsperpage
+            page: this.currentPage,
+            itemsPerPage: this.itemsPerPage,
+          },
+        });
+        this.filteredUsers = response.data;
+        this.totalItems = parseInt(response.headers["x-total-count"]);
+        //total no. of items available from server and store in var
+        this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    },
+
+    nextPage() { //Increments the currentPage by 1 if the current page is less than the total number of pages.
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+        this.fetchUsers();
+      }
+    },
+    prevPage() { //Decrements the currentPage by 1 if the current page is greater than 1.
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.fetchUsers();
+      }
+    },
+  },
+  created() {
+    this.fetchUsers();
   },
 };
 </script>

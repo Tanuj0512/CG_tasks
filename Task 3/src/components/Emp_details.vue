@@ -10,8 +10,11 @@
           type="text"
           placeholder="Enter your First Name"
           v-model="user.firstName"
-          required
+          
         />
+        <div class="error-message" v-if="errorMessages.firstName">
+          {{ errorMessages.firstName }}
+        </div>
       </div>
 
       <div class="form-group">
@@ -22,8 +25,11 @@
           type="text"
           placeholder="Enter your Last Name"
           v-model="user.lastName"
-          required
+         
         />
+        <div class="error-message" v-if="errorMessages.lastName">
+          {{ errorMessages.lastName }}
+        </div>
       </div>
 
       <div class="form-group">
@@ -33,8 +39,11 @@
           class="form-control"
           type="date"
           v-model="user.dob"
-          required
+          
         />
+        <div class="error-message" v-if="errorMessages.dob">
+          {{ errorMessages.dob }}
+        </div>
       </div>
 
       <div class="form-group">
@@ -45,8 +54,11 @@
           type="text"
           placeholder="Enter your address"
           v-model="user.address"
-          required
+          
         />
+        <div class="error-message" v-if="errorMessages.address">
+          {{ errorMessages.address }}
+        </div>
       </div>
 
       <div class="form-group">
@@ -57,11 +69,17 @@
           type="tel"
           placeholder="Enter your mobile number"
           v-model="user.mobile"
-          required
+          
         />
+        <div class="error-message" v-if="errorMessages.mobile">
+          {{ errorMessages.mobile }}
+        </div>
       </div>
+
       <div class="form-but">
-        <button class="btn btn-primary">{{ editUser ? 'Update User' : 'Add User' }}</button>
+        <button class="btn btn-primary">
+          {{ editUser ? "Update User" : "Add User" }}
+        </button>
       </div>
     </form>
   </div>
@@ -69,7 +87,6 @@
 
 <script>
 import axios from "axios";
-// import { validateUser } from "../../server/validation/validation";
 
 export default {
   name: "UserForm",
@@ -87,8 +104,9 @@ export default {
         dob: "",
         address: "",
         mobile: "",
-        // errorMessages : {},
       },
+      errorMessages: {},
+      isSubmitting: false,
     };
   },
   watch: {
@@ -104,19 +122,36 @@ export default {
     },
   },
   methods: {
-    async handleSubmit() {
-    //  // validate user
-    //   const validationOnFields = validateUser(this.user);
-    //   //if error in fields
-    //   if (validationOnFields.error){
-    //     this.errorMessages = validationOnFields.error.details.reduce((acc, curr) => {
-    //       acc[curr.context.key] =  curr.message;
-    //       return acc;
-    //     },{});
-    //     return; //stop form submission
-    //   }
+    async validateUser() {
+      try {
+        await axios.post("/api/validateUser/", this.user);
+        this.errorMessages = {}; //there is no error after checking in backend
+        return true;
+      } catch (error) {
+        //if erroe in validation at backend
+        if (error.response && error.response.data.errors) {
+          this.errorMessages = error.response.data.errors.reduce(
+            (acc, message) => {
+              const field = message.split('"')[1]; //exact field name causing error
+              acc[field] = message; //map error message to field name
+              return acc;
+            },
+            {}
+          );
+        }
+        return false;
+      }
+    },
 
-      //if no erorr submit the form
+    async handleSubmit() {
+      //validation
+      this.isSubmitting = true;
+      const isValid = await this.validateUser();
+      if (!isValid) {
+        this.isSubmitting = false;
+        return;
+      }
+
       try {
         if (this.editUser) {
           await axios.put(`/api/users/${this.user.id}`, this.user);
@@ -129,9 +164,6 @@ export default {
       } catch (error) {
         console.error("Error submitting form:", error);
       }
-
-     
-      
     },
     resetForm() {
       this.user = {
@@ -141,7 +173,7 @@ export default {
         address: "",
         mobile: "",
       };
-      this.errorMessage = "";
+      this.errorMessages = {};
     },
   },
 };

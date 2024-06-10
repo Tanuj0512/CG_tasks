@@ -15,25 +15,19 @@ const {
 const addUser = (req, res) => {
   const { firstName, lastName, dob, address, mobile } = req.body;
   const sql = addUserQuery.addUser;
-
-  db.query(sql, [firstName, lastName, dob, address, mobile], (err, result) => {
+  const values = [firstName, lastName, dob, address, mobile];
+  db.query(sql, values,(err, result) => {
     //error handeling
     if (err) {
       console.error("Error adding user:", err);
       res.status(422).json({ error: "Failed to add user" });
       return;
     }
-    res.status(201).json({
-      id: result.insertId,
-      firstName,
-      lastName,
-      dob,
-      address,
-      mobile,
+    // res.status(201).json({ message: 'User added successfully' });
     });
     //If the query is successful, it sends a JSON response back to the client
     //containing the inserted user's details, including the id of the new user (result.insertId).
-  });
+  
 };
 
 //get allusers
@@ -142,7 +136,7 @@ const sorting = (req, res) => {
   if (order !== "ASC" && order !== "DESC") {
     return res.status(400).send("Invalid order parameter");
   }
-  
+
   setSortQuery(sortBy, order, (err, results) => {
     if (err) {
       return res.status(500).send(err);
@@ -153,18 +147,30 @@ const sorting = (req, res) => {
 
 //pagenation
 const pagenation = (req, res) => {
-  const pages = parseInt(req.query.page);
-  const items = parseInt(req.query.items); //parseInt - to convert string to number, in URL "?page=2&items=10" 2 and 10 will be considered as string with parseInt
-  const offset = (pages - 1) * items; //skip the no. of entries before starting to new page
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10; //parseInt - to convert string to number, in URL "?page=2&items=10" 2 and 10 will be considered as string with parseInt
+  const offset = (page - 1) * itemsPerPage; //skip the no. of entries before starting to new page
 
   const sql = setPagenation.pagegenation;
+  const countSql = setPagenation.countPagenation;
 
-  db.query(sql, [items, offset], (err, results) => {
+  //countSql
+  db.query(countSql, (err, countResults) => {
     if (err) {
-      res.status(500).json({ error: "Items not found" });
+      res.status(500).json({ error: "count query failed" });
       console.log(err);
     } else {
-      res.json(results);
+      const totalItems = countResults[0].total;
+      //pgenation
+      db.query(sql, [itemsPerPage, offset], (err, results) => {
+        if (err) {
+          res.status(500).json({ error: "Items not found" });
+          console.log(err);
+        } else {
+          res.setHeader("X-Total-Count", totalItems);//to understand frontend total no. of items available
+          res.json(results);
+        }
+      });
     }
   });
 };

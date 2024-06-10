@@ -78,3 +78,11 @@ If there is a search term:
 If there is no search term:
     Reset filteredUsers to the original list of users.
 Log any errors that occur during the API request.
+
+
+//pagenation 
+The backend code implements a paginated API endpoint to fetch users from a database.
+It processes query parameters to determine the current page and the number of items per page.
+It performs a count query to determine the total number of items and uses this to set a response header.
+It fetches the appropriate subset of user data for the current page using SQL LIMIT and OFFSET.
+It returns the user data along with a header indicating the total number of items available.

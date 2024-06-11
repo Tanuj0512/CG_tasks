@@ -10,10 +10,10 @@
           type="text"
           placeholder="Enter your First Name"
           v-model="user.firstName"
-          
+          @input="clearErrorMessage('firstName')"
         />
         <div class="error-message" v-if="errorMessages.firstName">
-          {{ errorMessages.firstName }}
+          {{ getErrorMessage("firstName", errorMessages.firstName) }}
         </div>
       </div>
 
@@ -25,10 +25,10 @@
           type="text"
           placeholder="Enter your Last Name"
           v-model="user.lastName"
-         
+          @input="clearErrorMessage('lastName')"
         />
         <div class="error-message" v-if="errorMessages.lastName">
-          {{ errorMessages.lastName }}
+          {{ getErrorMessage("lastName", errorMessages.lastName) }}
         </div>
       </div>
 
@@ -39,10 +39,10 @@
           class="form-control"
           type="date"
           v-model="user.dob"
-          
+          @input="clearErrorMessage('dob')"
         />
         <div class="error-message" v-if="errorMessages.dob">
-          {{ errorMessages.dob }}
+          {{ getErrorMessage("dob", errorMessages.dob) }}
         </div>
       </div>
 
@@ -54,10 +54,10 @@
           type="text"
           placeholder="Enter your address"
           v-model="user.address"
-          
+          @input="clearErrorMessage('address')"
         />
         <div class="error-message" v-if="errorMessages.address">
-          {{ errorMessages.address }}
+          {{ getErrorMessage("address", errorMessages.address) }}
         </div>
       </div>
 
@@ -69,17 +69,15 @@
           type="tel"
           placeholder="Enter your mobile number"
           v-model="user.mobile"
-          
+          @input="clearErrorMessage('mobile')"
         />
         <div class="error-message" v-if="errorMessages.mobile">
-          {{ errorMessages.mobile }}
+          {{ getErrorMessage("mobile", errorMessages.mobile) }}
         </div>
       </div>
 
       <div class="form-but">
-        <button class="btn btn-primary">
-          {{ editUser ? "Update User" : "Add User" }}
-        </button>
+        <button class="btn btn-primary">Add User</button>
       </div>
     </form>
   </div>
@@ -109,37 +107,33 @@ export default {
       isSubmitting: false,
     };
   },
-  watch: {
-    editUser: {
-      handler(newVal) {
-        if (newVal) {
-          this.user = { ...newVal };
-        } else {
-          this.resetForm();
-        }
-      },
-      immediate: true,
-    },
-  },
+
   methods: {
     async validateUser() {
       try {
         await axios.post("/api/validateUser/", this.user);
-        this.errorMessages = {}; //there is no error after checking in backend
+        this.errorMessages = {}; // clear error messages
         return true;
       } catch (error) {
-        //if erroe in validation at backend
-        if (error.response && error.response.data.errors) {
-          this.errorMessages = error.response.data.errors.reduce(
-            (acc, message) => {
-              const field = message.split('"')[1]; //exact field name causing error
-              acc[field] = message; //map error message to field name
-              return acc;
-            },
-            {}
-          );
+        if (error.response && error.response.data) {
+          const errorMessages = error.response.data.errors;
+          this.errorMessages = errorMessages.reduce((acc, message) => {
+            const field = message.split('"')[1]; // exact field name causing error
+            acc[field] = message; // map error message to field name
+            return acc;
+          }, {});
         }
         return false;
+      }
+    },
+    getErrorMessage(fieldName, errorObject) {
+      const errorCode = Object.keys(errorObject)[0];
+      return errorObject[errorCode];
+    },
+    clearErrorMessage(fieldName) {
+      // Clear the error message when the user starts typing again
+      if (this.errorMessages[fieldName]) {
+        this.errorMessages[fieldName] = "";
       }
     },
 
@@ -151,15 +145,11 @@ export default {
         this.isSubmitting = false;
         return;
       }
-
+      //if is valid
       try {
-        if (this.editUser) {
-          await axios.put(`/api/users/${this.user.id}`, this.user);
-          this.$emit("update-user", { ...this.user });
-        } else {
-          const response = await axios.post("/api/users", this.user);
-          this.$emit("add-user", response.data);
-        }
+        const response = await axios.post("/api/users", this.user);
+        this.$emit("add-user", response.data);
+        alert("User added Sucessfully");
         this.resetForm();
       } catch (error) {
         console.error("Error submitting form:", error);
@@ -179,7 +169,13 @@ export default {
 };
 </script>
 
+
 <style scoped>
+form.user-form {
+  background-color: ghostwhite;
+  padding: 3vh;
+  border-radius: 10px;
+}
 .user-form {
   max-width: 400px;
   margin: 0 auto;

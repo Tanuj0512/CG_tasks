@@ -89,7 +89,7 @@ const deleteUser = (req, res) => {
   });
 };
 
-//search item
+//search item -//term - value
 const search = (req, res) => {
   const searchTerm = req.query.term; //gets the value of key-value pair at the end of URL
   if (!searchTerm) {
@@ -99,7 +99,6 @@ const search = (req, res) => {
   }
 
   const sql = setSearchQuery.searchQuery;
-
   const searchValue = `%${searchTerm}%`;
 
   db.query(
@@ -115,7 +114,7 @@ const search = (req, res) => {
   );
 };
 
-//sorting
+//sorting - sortBy-...., order -.....
 const sorting = (req, res) => {
   const sortBy = req.query.sortBy;
   const order = req.query.order === "desc" ? "DESC" : "ASC";
@@ -145,7 +144,7 @@ const sorting = (req, res) => {
   });
 };
 
-//pagenation
+//pagenation page, items
 const pagenation = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const itemsPerPage = parseInt(req.query.itemsPerPage) || 10; //parseInt - to convert string to number, in URL "?page=2&items=10" 2 and 10 will be considered as string with parseInt

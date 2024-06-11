@@ -57,11 +57,11 @@ const userSchema = Joi.object({
 const validateUser = (req, res, next) => {
   const { error } = userSchema.validate(req.body, { abortEarly: false });//continue to find all errors instead of stopping at one place 
   if (error) {
-    const errorMessages = error.details.map(detail => detail.message);
+    const errorMessages = error.details.map(detail => detail.message);//extract and format error msg
     return res.status(400).json({ errors: errorMessages });
   }
   next();
-  res.status(200).json({ message: "Validation successful and user added " });
+  res.status(200).json({ message: "Validation successful and user added" });
 };
 
 module.exports = {validateUser};

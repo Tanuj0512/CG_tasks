@@ -81,16 +81,15 @@ function updateUser(updateUser) {
 
 
 
-
 <style scoped>
 .App {
   width: 100%;
-  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+  /* box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px; */
   display: flex;
   flex-direction: column;
   margin: 5vh auto;
   align-items: center;
-  font-family: Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   color: #333;
 }
 
@@ -100,7 +99,7 @@ function updateUser(updateUser) {
   margin-top: 20px;
   width: 100%;
   gap: 5vw;
-  padding: 2vh 2vw 10vh 2vw;
+  /* padding: 2vh 2vw 10vh 2vw; */
 }
 
 h1 {

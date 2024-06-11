@@ -44,7 +44,7 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="tableBody">
           <tr v-for="(user, index) in filteredUsers" :key="index">
             <td>
               <span v-if="editIndex !== index">{{ user.firstName }}</span>
@@ -127,6 +127,7 @@
 
 <script>
 import axios from "axios";
+import { ref } from "vue";
 
 export default {
   name: "UserTable",
@@ -146,7 +147,7 @@ export default {
       sortField: "firstName", //sort
       sortOrder: "asc", //sort
       currentPage: 1,
-      itemsPerPage: 10,
+      itemsPerPage:10,
       totalItems: 0,
       totalPages: 0,
     };
@@ -164,6 +165,8 @@ export default {
       const end = start + this.itemsPerPage;
       return this.filteredUsers.slice(start, end);
     },
+
+    
   },
 
   methods: {
@@ -220,7 +223,7 @@ export default {
           console.error("Error fetching search results:", error);
         }
       } else {
-        this.filteredUsers = this.users;
+        this.filteredUsers = this.users;//whdn no search term
       }
     },
 
@@ -249,23 +252,32 @@ export default {
         this.totalItems = parseInt(response.headers["x-total-count"]);
         //total no. of items available from server and store in var
         this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+        
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     },
 
-    nextPage() { //Increments the currentPage by 1 if the current page is less than the total number of pages.
+    nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
+        router.push({ query: { page: this.currentPage } }); //updates the query parameter page in the URL to the new value of currentPage
         this.fetchUsers();
       }
     },
-    prevPage() { //Decrements the currentPage by 1 if the current page is greater than 1.
+
+    prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
+        router.push({ query: { page: this.currentPage } }); // Update URL
         this.fetchUsers();
       }
     },
+  },
+  mounted() {
+    const currentPage = parseInt(this.$route.query.page) || 1; // Get current page from URL
+    this.currentPage = currentPage;
+    this.fetchUsers();
   },
   created() {
     this.fetchUsers();
@@ -275,6 +287,38 @@ export default {
 
 
 <style scoped>
+.pagination-controls {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination-controls button {
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-controls button:hover {
+  background-color: #4caf50;
+  color: white;
+}
+
+.pagination-controls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-controls span {
+  margin: 0 10px;
+}
+
+.tableBody {
+  background-color: ghostwhite;
+}
 .tableInfo {
   width: 100%;
   max-width: 950px;
@@ -413,5 +457,14 @@ export default {
 .cancel-button:hover {
   background-color: #fb8c00;
 }
-</style>
 
+.buttons-align {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.buttons-align button {
+  flex-grow: 1;
+}
+</style>

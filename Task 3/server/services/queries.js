@@ -1,3 +1,4 @@
+const { count } = require("console");
 const db = require("../config/db");
 //add user query
 
@@ -20,19 +21,33 @@ const deleteUserQuery = {
 };
 
 const setSearchQuery = {
-  searchQuery:
-    "SELECT * FROM users WHERE firstName LIKE ? OR lastName LIKE ? OR dob LIKE ? OR address LIKE ? OR mobile LIKE ?",
+  searchQuery: `
+    SELECT * FROM users
+    WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?
+    ORDER BY ?? ??
+    LIMIT ? OFFSET ?
+  `,
+  countSql: `
+    SELECT COUNT(*) as total FROM users
+    WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?
+  `,
 };
 
-const setSortQuery = (sortBy, order, callback) => {
-  const sortQuery = `SELECT * FROM users ORDER BY ${sortBy} ${order}`;
-  db.query(sortQuery, callback);
+const setSortQuery = {
+  sortQuery: `
+    SELECT * FROM users
+    ORDER BY ?? ??
+    LIMIT ? OFFSET ?
+  `,
+  countSql: "SELECT COUNT(*) as total FROM users",
 };
 
 const setPagenation = {
-  pagegenation: "SELECT * FROM users LIMIT ? OFFSET ?",//retrives user data for current page
-  countPagenation: "SELECT COUNT(*) AS total FROM users",//counts total users in table, to get total users for futher calculatiomns
+  pagegenation: "SELECT * FROM users LIMIT ? OFFSET ?", // Retrieves user data for current page
+  countPagenation: "SELECT COUNT(*) AS total FROM users", // Counts total users in table, for pagination calculations
 };
+
+
 
 module.exports = {
   addUserQuery,
@@ -42,4 +57,5 @@ module.exports = {
   setSearchQuery,
   setPagenation,
   setSortQuery: setSortQuery,
+  // setOrderByUser,
 };

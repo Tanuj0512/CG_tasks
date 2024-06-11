@@ -5,6 +5,7 @@ const {
   getAllUsers,
   updateUser,
   deleteUser,
+  combinedSearchSortPagination,
   search,
   pagenation,
   sorting,
@@ -21,6 +22,8 @@ router.get("/users/search", search);
 router.get("/users/sort",sorting);
 //pagenation
 router.get("/users/items", pagenation);
+
+
 //validate user endpoints in frontened
 router.post("/validateUser", validateUser);
 

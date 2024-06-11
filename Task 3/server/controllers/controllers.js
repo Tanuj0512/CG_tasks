@@ -1,4 +1,4 @@
-const { error } = require("console");
+const { error, count } = require("console");
 const db = require("../config/db");
 const {
   addUserQuery,
@@ -16,7 +16,7 @@ const addUser = (req, res) => {
   const { firstName, lastName, dob, address, mobile } = req.body;
   const sql = addUserQuery.addUser;
   const values = [firstName, lastName, dob, address, mobile];
-  db.query(sql, values,(err, result) => {
+  db.query(sql, values, (err, result) => {
     //error handeling
     if (err) {
       console.error("Error adding user:", err);
@@ -24,10 +24,9 @@ const addUser = (req, res) => {
       return;
     }
     // res.status(201).json({ message: 'User added successfully' });
-    });
-    //If the query is successful, it sends a JSON response back to the client
-    //containing the inserted user's details, including the id of the new user (result.insertId).
-  
+  });
+  //If the query is successful, it sends a JSON response back to the client
+  //containing the inserted user's details, including the id of the new user (result.insertId).
 };
 
 //get allusers
@@ -91,33 +90,18 @@ const deleteUser = (req, res) => {
 
 //search item -//term - value
 const search = (req, res) => {
-  const searchTerm = req.query.term; //gets the value of key-value pair at the end of URL
+  const searchTerm = req.query.term;
+  const sortBy = req.query.sortBy || "firstName"; // Default sort field
+  const order = req.query.order === "desc" ? "DESC" : "ASC";
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+  const offset = (page - 1) * itemsPerPage;
+
   if (!searchTerm) {
     return res.status(400).json({
       error: "Search term is required",
     });
   }
-
-  const sql = setSearchQuery.searchQuery;
-  const searchValue = `%${searchTerm}%`;
-
-  db.query(
-    sql,
-    [searchValue, searchValue, searchValue, searchValue, searchValue],
-    (err, results) => {
-      if (err) {
-        console.error("Executin search query", err);
-        return res.status(500).json({ error: "Internal sever error" });
-      }
-      res.json(results);
-    }
-  );
-};
-
-//sorting - sortBy-...., order -.....
-const sorting = (req, res) => {
-  const sortBy = req.query.sortBy;
-  const order = req.query.order === "desc" ? "DESC" : "ASC";
 
   const validSortBy = [
     "firstName",
@@ -127,50 +111,133 @@ const sorting = (req, res) => {
     "mobile",
     "id",
   ];
-
   if (!validSortBy.includes(sortBy)) {
     return res.status(400).send("Invalid sortBy parameter");
   }
 
-  if (order !== "ASC" && order !== "DESC") {
-    return res.status(400).send("Invalid order parameter");
+  const searchValue = `%${searchTerm}%`;
+  const searchQuery = `
+    SELECT * FROM users
+    WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?
+    ORDER BY ${sortBy} ${order}
+    LIMIT ? OFFSET ?
+  `;
+  const countSql = `
+    SELECT COUNT(*) as total FROM users
+    WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?
+  `;
+
+  db.query(
+    searchQuery,
+    [
+      searchValue,
+      searchValue,
+      searchValue,
+      searchValue,
+      searchValue,
+      itemsPerPage,
+      offset,
+    ],
+    (err, results) => {
+      if (err) {
+        console.error("Executing search query", err);
+        return res.status(500).json({ error: "Search query failed" });
+      }
+
+      db.query(
+        countSql,
+        [searchValue, searchValue, searchValue, searchValue, searchValue],
+        (err, countResults) => {
+          if (err) {
+            console.error("Executing count query", err);
+            return res.status(500).json({ error: "Count query failed" });
+          }
+
+          const totalItems = countResults[0].total;
+          res.setHeader("X-Total-Count", totalItems);
+          res.json(results);
+        }
+      );
+    }
+  );
+};
+
+module.exports = {
+  search,
+};
+
+
+//sorting and pagenation
+const sorting = (req, res) => {
+  const sortBy = req.query.sortBy;
+  const order = req.query.order === "desc" ? "DESC" : "ASC";
+  const page = parseInt(req.query.page) || 1;
+  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+  const offset = (page - 1) * itemsPerPage;
+
+  const validSortBy = [
+    "firstName",
+    "lastName",
+    "dob",
+    "address",
+    "mobile",
+    "id",
+  ];
+  if (!validSortBy.includes(sortBy)) {
+    return res.status(400).send("Invalid sortBy parameter");
   }
 
-  setSortQuery(sortBy, order, (err, results) => {
+  const sortQuery = `
+  SELECT * FROM users
+  ORDER BY ${sortBy} ${order}
+  LIMIT ? OFFSET ?
+`;
+  const countSql = setSortQuery.countSql;
+
+  db.query(sortQuery, [itemsPerPage, offset], (err, results) => {
     if (err) {
-      return res.status(500).send(err);
+      console.error("Executing sort query", err);
+      return res.status(500).json({ error: "Sort query failed" });
     }
-    res.json(results);
+
+    db.query(countSql, (err, countResults) => {
+      if (err) {
+        console.error("Executing count query", err);
+        return res.status(500).json({ error: "Count query failed" });
+      }
+
+      const totalItems = countResults[0].total;
+      res.setHeader("X-Total-Count", totalItems);
+      res.json(results);
+    });
   });
 };
 
 //pagenation page, items
 const pagenation = (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10; //parseInt - to convert string to number, in URL "?page=2&items=10" 2 and 10 will be considered as string with parseInt
-  const offset = (page - 1) * itemsPerPage; //skip the no. of entries before starting to new page
+  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+  const offset = (page - 1) * itemsPerPage;
 
-  const sql = setPagenation.pagegenation;
+  const paginationSql = setPagenation.pagegenation;
   const countSql = setPagenation.countPagenation;
 
-  //countSql
   db.query(countSql, (err, countResults) => {
     if (err) {
-      res.status(500).json({ error: "count query failed" });
-      console.log(err);
-    } else {
-      const totalItems = countResults[0].total;
-      //pgenation
-      db.query(sql, [itemsPerPage, offset], (err, results) => {
-        if (err) {
-          res.status(500).json({ error: "Items not found" });
-          console.log(err);
-        } else {
-          res.setHeader("X-Total-Count", totalItems);//to understand frontend total no. of items available
-          res.json(results);
-        }
-      });
+      console.error("Executing count query", err);
+      return res.status(500).json({ error: "Count query failed" });
     }
+
+    const totalItems = countResults[0].total;
+    db.query(paginationSql, [itemsPerPage, offset], (err, results) => {
+      if (err) {
+        console.error("Executing pagination query", err);
+        return res.status(500).json({ error: "Pagination query failed" });
+      }
+
+      res.setHeader("X-Total-Count", totalItems);
+      res.json(results);
+    });
   });
 };
 
@@ -182,4 +249,5 @@ module.exports = {
   search,
   pagenation,
   sorting,
+  // combinedSearchSortPagination,
 };

@@ -86,3 +86,9 @@ It processes query parameters to determine the current page and the number of it
 It performs a count query to determine the total number of items and uses this to set a response header.
 It fetches the appropriate subset of user data for the current page using SQL LIMIT and OFFSET.
 It returns the user data along with a header indicating the total number of items available.
+
+
+
+
+//search,sort,pagenation -http://localhost:3000/users/search?term=jo&page=1&itemsPerPage=10&sortBy=lastName&order=asc
+//sort, pagenation - http://localhost:3000/users/sort?sortBy=firstName&order=asc&page=2&itemsPerPage=10

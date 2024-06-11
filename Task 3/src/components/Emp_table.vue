@@ -2,7 +2,6 @@
   <div class="tableInfo">
     <h3>Users Data</h3>
     <div class="table-header">
-    
       <div class="search-bar">
         <label>Search Bar</label>
         <input
@@ -33,7 +32,7 @@
       <div v-if="showSuccessMessage" class="success-message">
         Data updated successfully!
       </div>
-      <table class="table">
+      <table class="table" v-if="filteredUsers.length > 0">
         <thead>
           <tr>
             <th>First Name</th>
@@ -112,6 +111,7 @@
           </tr>
         </tbody>
       </table>
+      <div v-else class="no-users-message">No user found</div>
       <div class="pagination-controls">
         <button @click="prevPage" :disabled="currentPage === 1">
           Previous
@@ -147,7 +147,7 @@ export default {
       sortField: "firstName", //sort
       sortOrder: "asc", //sort
       currentPage: 1,
-      itemsPerPage:10,
+      itemsPerPage: 10,
       totalItems: 0,
       totalPages: 0,
     };
@@ -165,8 +165,6 @@ export default {
       const end = start + this.itemsPerPage;
       return this.filteredUsers.slice(start, end);
     },
-
-    
   },
 
   methods: {
@@ -205,12 +203,15 @@ export default {
         try {
           await axios.delete(`/api/users/${userId}`);
           this.$emit("delete-user", userId);
+          this.filteredUsers = this.filteredUsers.filter(
+            (user) => user.id !== userId
+          );
+          this.fetchUsers();
         } catch (error) {
           console.error("Error deleting user:", error);
         }
       }
     },
-
     // Search users
     async searchUsers() {
       if (this.searchTerm) {
@@ -223,7 +224,7 @@ export default {
           console.error("Error fetching search results:", error);
         }
       } else {
-        this.filteredUsers = this.users;//whdn no search term
+        this.fetchUsers(); //whdn no search term
       }
     },
 
@@ -243,7 +244,8 @@ export default {
     async fetchUsers() {
       try {
         const response = await axios.get("/api/users/items", {
-          params: {//which page and how many itemsperpage
+          params: {
+            //which page and how many itemsperpage
             page: this.currentPage,
             itemsPerPage: this.itemsPerPage,
           },
@@ -252,7 +254,6 @@ export default {
         this.totalItems = parseInt(response.headers["x-total-count"]);
         //total no. of items available from server and store in var
         this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
-        
       } catch (error) {
         console.error("Error fetching users:", error);
       }
@@ -261,7 +262,6 @@ export default {
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
-        router.push({ query: { page: this.currentPage } }); //updates the query parameter page in the URL to the new value of currentPage
         this.fetchUsers();
       }
     },
@@ -269,13 +269,12 @@ export default {
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
-        router.push({ query: { page: this.currentPage } }); // Update URL
         this.fetchUsers();
       }
     },
   },
   mounted() {
-    const currentPage = parseInt(this.$route.query.page) || 1; // Get current page from URL
+    const currentPage = parseInt(this.$route.query.page) || 1;
     this.currentPage = currentPage;
     this.fetchUsers();
   },
@@ -285,8 +284,31 @@ export default {
 };
 </script>
 
-
 <style scoped>
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-bar,
+.sortingBar {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input,
+.select-input {
+  margin-left: 10px;
+  padding: 5px;
+}
+
+.success-message {
+  color: green;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 .pagination-controls {
   margin-top: 20px;
   display: flex;
@@ -468,3 +490,6 @@ export default {
   flex-grow: 1;
 }
 </style>
+
+
+

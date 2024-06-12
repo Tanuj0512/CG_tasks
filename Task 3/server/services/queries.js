@@ -43,7 +43,7 @@ const setSortQuery = {
 };
 
 const setPagenation = {
-  pagegenation: "SELECT * FROM users LIMIT ? OFFSET ?", // Retrieves user data for current page
+  pagegenation: "SELECT * FROM users ORDER BY id DESC LIMIT ? OFFSET ?", // Retrieves user data for current page
   countPagenation: "SELECT COUNT(*) AS total FROM users", // Counts total users in table, for pagination calculations
 };
 

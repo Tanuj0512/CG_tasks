@@ -172,7 +172,7 @@ export default {
 
 <style scoped>
 form.user-form {
-  background-color: ghostwhite;
+  background-color:#dbdfd8;;
   padding: 3vh;
   border-radius: 10px;
 }

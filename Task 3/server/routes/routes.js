@@ -7,8 +7,8 @@ const {
   deleteUser,
   combinedSearchSortPagination,
   search,
-  pagenation,
-  sorting,
+  // pagenation,
+  // sorting,
 } = require("../controllers/controllers");
 const { validateUser } = require("../validation/validation");
 
@@ -19,9 +19,9 @@ router.route("/users/:id").put( updateUser).delete(deleteUser);
 //search
 router.get("/users/search", search);
 //sort
-router.get("/users/sort",sorting);
+// router.get("/users/sort",sorting);
 //pagenation
-router.get("/users/items", pagenation);
+// router.get("/users/items", pagenation);
 
 
 //validate user endpoints in frontened

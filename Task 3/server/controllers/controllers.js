@@ -88,81 +88,81 @@ const deleteUser = (req, res) => {
   });
 };
 
-//pagenation page, items
-const pagenation = (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
-  const offset = (page - 1) * itemsPerPage;
+// //pagenation page, items
+// const pagenation = (req, res) => {
+//   const page = parseInt(req.query.page) || 1;
+//   const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+//   const offset = (page - 1) * itemsPerPage;
 
-  const paginationSql = setPagenation.pagegenation;
-  const countSql = setPagenation.countPagenation;
+//   const paginationSql = setPagenation.pagegenation;
+//   const countSql = setPagenation.countPagenation;
 
-  //count query
-  db.query(countSql, (err, countResults) => {
-    if (err) {
-      console.error("Executing count query", err);
-      return res.status(500).json({ error: "Count query failed" });
-    }
-    const totalItems = countResults[0].total;
-    //pagenation
-    db.query(paginationSql, [itemsPerPage, offset], (err, results) => {
-      if (err) {
-        console.error("Executing pagination query", err);
-        return res.status(500).json({ error: "Pagination query failed" });
-      }
+//   //count query
+//   db.query(countSql, (err, countResults) => {
+//     if (err) {
+//       console.error("Executing count query", err);
+//       return res.status(500).json({ error: "Count query failed" });
+//     }
+//     const totalItems = countResults[0].total;
+//     //pagenation
+//     db.query(paginationSql, [itemsPerPage, offset], (err, results) => {
+//       if (err) {
+//         console.error("Executing pagination query", err);
+//         return res.status(500).json({ error: "Pagination query failed" });
+//       }
 
-      res.setHeader("X-Total-Count", totalItems);
-      res.json(results);
-    });
-  });
-};
+//       res.setHeader("X-Total-Count", totalItems);
+//       res.json(results);
+//     });
+//   });
+// };
 
-//sorting and pagenation
-const sorting = (req, res) => {
-  const sortBy = req.query.sortBy;
-  const order = req.query.order === "desc" ? "DESC" : "ASC";
-  const page = parseInt(req.query.page) || 1;
-  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
-  const offset = (page - 1) * itemsPerPage;
+// //sorting and pagenation
+// const sorting = (req, res) => {
+//   const sortBy = req.query.sortBy;
+//   const order = req.query.order === "desc" ? "DESC" : "ASC";
+//   const page = parseInt(req.query.page) || 1;
+//   const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+//   const offset = (page - 1) * itemsPerPage;
 
-  const validSortBy = [
-    "firstName",
-    "lastName",
-    "dob",
-    "address",
-    "mobile",
-    "id",
-  ];
-  if (!validSortBy.includes(sortBy)) {
-    return res.status(400).send("Invalid sortBy parameter");
-  }
+//   const validSortBy = [
+//     "firstName",
+//     "lastName",
+//     "dob",
+//     "address",
+//     "mobile",
+//     "id",
+//   ];
+//   if (!validSortBy.includes(sortBy)) {
+//     return res.status(400).send("Invalid sortBy parameter");
+//   }
 
-  const sortQuery = `
-    SELECT * FROM users
-    ORDER BY ${sortBy} ${order}
-    LIMIT ? OFFSET ?
-  `;
+//   const sortQuery = `
+//     SELECT * FROM users
+//     ORDER BY ${sortBy} ${order}
+//     LIMIT ? OFFSET ?
+//   `;
 
-  // Execute the sort query with pagination parameters
-  db.query(sortQuery, [itemsPerPage, offset], (err, results) => {
-    if (err) {
-      console.error("Executing sort query", err);
-      return res.status(500).json({ error: "Sort query failed" });
-    }
+//   // Execute the sort query with pagination parameters
+//   db.query(sortQuery, [itemsPerPage, offset], (err, results) => {
+//     if (err) {
+//       console.error("Executing sort query", err);
+//       return res.status(500).json({ error: "Sort query failed" });
+//     }
 
-    // Execute count query to get total count for pagination
-    const countSql = `SELECT COUNT(*) as total FROM users `;
-    db.query(countSql, (err, countResults) => {
-      if (err) {
-        console.error("Executing count query", err);
-        return res.status(500).json({ error: "Count query failed" });
-      }
-      const totalItems = countResults[0].total;
-      res.setHeader("X-Total-Count", totalItems);
-      res.json(results);
-    });
-  });
-};
+//     // Execute count query to get total count for pagination
+//     const countSql = `SELECT COUNT(*) as total FROM users `;
+//     db.query(countSql, (err, countResults) => {
+//       if (err) {
+//         console.error("Executing count query", err);
+//         return res.status(500).json({ error: "Count query failed" });
+//       }
+//       const totalItems = countResults[0].total;
+//       res.setHeader("X-Total-Count", totalItems);
+//       res.json(results);
+//     });
+//   });
+// };
 
 //search sort pagenation -//term - value
 const search = (req, res) => {
@@ -244,6 +244,6 @@ module.exports = {
   updateUser,
   deleteUser,
   search,
-  pagenation,
-  sorting,
+  // pagenation,
+  // sorting,
 };

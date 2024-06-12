@@ -19,9 +19,22 @@ export default {
       sortField: "firstName", //sort
       sortOrder: "asc", //sort
       currentPage: 1,
-      itemsPerPage: 10,
-      totalItems: 0,
+      totalItems: 0,  
       totalPages: 0,
+      itemsPerPage: 10, // Set default items per page to 10
+      dropDownField: 10, // Bind to the dropdown for items per page
+      itemOptions: [5, 10, 25],
+      sortingOptions: [
+        { value: "firstName", text: "First Name" },
+        { value: "lastName", text: "Last Name" },
+        { value: "mobile", text: "Mobile" },
+        { value: "address", text: "Address" },
+        { value: "dob", text: "DOB" },
+      ],
+      orderingOptions: [
+        { value: "asc", text: "Ascending" },
+        { value: "desc", text: "Descending" },
+      ],
     };
   },
 
@@ -116,7 +129,7 @@ export default {
 
     // Sort users
     async sortUsers() {
-      // this.currentPage = 1; 
+      // this.currentPage = 1;
       try {
         const response = await axios.get(`/api/users/sort`, {
           params: {
@@ -128,7 +141,7 @@ export default {
         });
         this.filteredUsers = response.data;
         this.totalItems = response.data.length;
-        this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+        // this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
       } catch (error) {
         console.error("Error fetching sorted results:", error);
       }
@@ -139,11 +152,10 @@ export default {
       try {
         const response = await axios.get("/api/users/items", {
           params: {
-            //which page and how many itemsperpage
             page: this.currentPage,
             itemsPerPage: this.itemsPerPage,
-            sortBy: this.sortField,
-            order: this.sortOrder,
+            sortBy: this.sortField, // Include sorting parameters
+            order: this.sortOrder, // Include sorting parameters
           },
         });
         this.filteredUsers = response.data; // Update filtered users
@@ -154,11 +166,19 @@ export default {
       }
     },
 
-    changePage(page) {
+    //function to select items per page
+
+    async itemsDropdown() {
+      this.itemsPerPage = parseInt(this.dropDownField);
+      this.fetchUsers();
+    },
+
+    // Function to change page
+    async changePage(page) {
       if (page >= 1 && page <= this.totalPages) {
-        //checks page number is valid in range
         this.currentPage = page;
-        this.fetchUsers();
+        // Retain sorting when changing page
+        await this.sortUsers();
       }
     },
 
@@ -198,23 +218,43 @@ export default {
           type="text"
           placeholder="...search"
           v-model="searchTerm"
-          @input="searchUsers"
+          @keypress.enter="searchUsers"
           class="search-input"
         />
       </div>
       <div class="sortingBar">
+        <lable for="dropdown"> Items: </lable>
+        <select
+          v-model="dropDownField"
+          @change="itemsDropdown"
+          class="select-input"
+        >
+          <option v-for="option in itemOptions" :key="option" :value="option">
+            {{ option }}
+          </option>
+        </select>
+      </div>
+
+      <div class="sortingBar">
         <label for="sortField">Sort By:</label>
         <select v-model="sortField" @change="sortUsers" class="select-input">
-          <option value="firstName">First Name</option>
-          <option value="lastName">Last Name</option>
-          <option value="mobile">Mobile</option>
-          <option value="address">Address</option>
-          <option value="dob">DOB</option>
+          <option
+            v-for="option in sortingOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.text }}
+          </option>
         </select>
         <label for="sortOrder">Order:</label>
         <select v-model="sortOrder" @change="sortUsers" class="select-input">
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
+          <option
+            v-for="option in orderingOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.text }}
+          </option>
         </select>
       </div>
     </div>
@@ -306,9 +346,7 @@ export default {
     <div class="lowerPart">
       <div class="total_count">
         <div class="pagination-controls">
-          
           <span>Showing {{ currentPage }} of {{ totalPages }} pages</span>
-          
         </div>
       </div>
 
@@ -347,12 +385,12 @@ export default {
 
 <style scoped>
 .total_count[data-v-61ea5ed0] {
-    margin: 20px 0;
-    display: flex;
-    align-items: center;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
 }
 
-.pagination-controls{
+.pagination-controls {
   font-weight: 700;
 }
 .lowerPart {

@@ -5,7 +5,6 @@ const {
   getAllUsers,
   updateUser,
   deleteUser,
-  combinedSearchSortPagination,
   search,
   // pagenation,
   // sorting,

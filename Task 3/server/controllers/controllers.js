@@ -5,10 +5,12 @@ const {
   getUserQuery,
   updateUserQuery,
   deleteUserQuery,
-  setSearchQuery,
-  setPagenation,
-  setSortQuery,
+  queryPagenation,
+  // setSearchQuery,
+  // setPagenation,
+  // setSortQuery,
 } = require("../services/queries");
+const { query } = require("express");
 // const { db } = require("express");
 
 //route to add a new user
@@ -165,77 +167,160 @@ const deleteUser = (req, res) => {
 // };
 
 //search sort pagenation -//term - value
+// const search = (req, res) => {
+//   //extracting query paramaters from URL
+//   const searchTerm = req.query.term || "";
+//   const sortBy = req.query.sortBy || "firstName";
+//   const order = req.query.order === "desc" ? "DESC" : "ASC";
+//   const page = parseInt(req.query.page) || 1;
+//   const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+//   const offset = (page - 1) * itemsPerPage;
+
+//   if (isNaN(page) || page < 1) {
+//     return res.status(400).json({ error: "Invalid page parameter" });
+//   }
+
+//   if (isNaN(itemsPerPage) || itemsPerPage < 1) {
+//     return res.status(400).json({ error: "Invalid itemsPerPage parameter" });
+//   }
+
+//   const validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
+//   if (!validSortBy.includes(sortBy)) {
+//     return res.status(400).send("Invalid sortBy parameter");
+//   }
+//   const validOrder = ["ASC", "DESC"];
+//   if (!validOrder.includes(order)) {
+//     return res.status(400).json({ error: "Invalid order parameter" });
+//   }
+
+//   // console.log(`Search Term: ${searchTerm}`);
+//   // console.log(`Sort By: ${sortBy}`);
+//   // console.log(`Order: ${order}`);
+//   // console.log(`Page: ${page}`);
+//   // console.log(`Items Per Page: ${itemsPerPage}`);
+
+//   //checks if there is a search term or not
+//   const searchCondition = queryPagenation.searchCondition(searchTerm);
+//   //creates an array of parameters that will be used to replace the placeholders (?) in the SQL query
+//   const searchParams = searchTerm
+//     ? [
+//         `%${searchTerm}%`,
+//         `%${searchTerm}%`,
+//         `%${searchTerm}%`,
+//         `%${searchTerm}%`,
+//         `%${searchTerm}%`,
+//       ]
+//     : [];
+
+//   //main query
+//   const tableQuery = queryPagenation.tableQuery(searchCondition, sortBy, order);
+
+//   //for out of total items display
+//   const countSql = queryPagenation.countQuery(searchCondition);
+
+//   // to execute SQL queries against database
+//   db.query(
+//     tableQuery, //retrieve filtered, sorted, and paginated user records.
+//     [...searchParams, itemsPerPage, offset],
+//     (err, results) => {
+//       if (err) {
+//         console.error("Executing search query", err);
+//         return res.status(500).json({ error: "Search query failed" });
+//       }
+
+//       db.query(countSql, searchParams, (err, countResults) => {
+//         if (err) {
+//           console.error("Executing count query", err);
+//           return res.status(500).json({ error: "Count query failed" });
+//         }
+
+//         const totalItems = countResults[0].total;
+//         res.setHeader("X-Total-Count", totalItems); //total number of matching records and sents in json f
+//         res.json(results);
+//       });
+//     }
+//   );
+// };
+
 const search = (req, res) => {
-  const searchTerm = req.query.term;
-  const sortBy = req.query.sortBy || "firstName";
-  const order = req.query.order === "desc" ? "DESC" : "ASC";
-  const page = parseInt(req.query.page) || 1;
-  const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
-  const offset = (page - 1) * itemsPerPage;
+  try {
+    // Extracting query parameters from URL
+    const searchTerm = req.query.term || "";
+    const sortBy = req.query.sortBy || "firstName";
+    const order = req.query.order === "desc" ? "DESC" : "ASC";
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+    const offset = (page - 1) * itemsPerPage;
 
-  if (!searchTerm) {
-    return res.status(400).json({
-      error: "Search term is required",
-    });
-  }
+    // Validate page parameter
+    if (isNaN(page) || page < 1) {
+      return res.status(400).json({ error: "Invalid page parameter" });
+    }
 
-  const validSortBy = [
-    "firstName",
-    "lastName",
-    "dob",
-    "address",
-    "mobile",
-    "id",
-  ];
-  if (!validSortBy.includes(sortBy)) {
-    return res.status(400).send("Invalid sortBy parameter");
-  }
+    // Validate itemsPerPage parameter
+    if (isNaN(itemsPerPage) || itemsPerPage < 1) {
+      return res.status(400).json({ error: "Invalid itemsPerPage parameter" });
+    }
 
-  const searchValue = `%${searchTerm}%`;
-  const searchQuery = `
-    SELECT * FROM users
-    WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?
-    ORDER BY ${sortBy} ${order}
-    LIMIT ? OFFSET ?
-  `;
-  const countSql = `
-    SELECT COUNT(*) as total FROM users
-    WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?
-  `;
+    // Validate sortBy parameter
+    const validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
+    if (!validSortBy.includes(sortBy)) {
+      return res.status(400).json({ error: "Invalid sortBy parameter" });
+    }
 
-  db.query(
-    searchQuery,
-    [
-      searchValue,
-      searchValue,
-      searchValue,
-      searchValue,
-      searchValue,
-      itemsPerPage,
-      offset,
-    ],
-    (err, results) => {
-      if (err) {
-        console.error("Executing search query", err);
-        return res.status(500).json({ error: "Search query failed" });
-      }
+    // Validate order parameter
+    const validOrder = ["ASC", "DESC"];
+    if (!validOrder.includes(order)) {
+      return res.status(400).json({ error: "Invalid order parameter" });
+    }
 
-      db.query(
-        countSql,
-        [searchValue, searchValue, searchValue, searchValue, searchValue],
-        (err, countResults) => {
+    // Build search condition and parameters based on the search term
+    const searchCondition = queryPagenation.searchCondition(searchTerm);
+    const searchParams = searchTerm
+      ? [
+          `%${searchTerm}%`,
+          `%${searchTerm}%`,
+          `%${searchTerm}%`,
+          `%${searchTerm}%`,
+          `%${searchTerm}%`,
+        ]
+      : [];
+
+    //main query
+    const tableQuery = queryPagenation.tableQuery(searchCondition,  sortBy, order );
+    
+
+    //for out of total items display
+    const countSql = queryPagenation.countQuery(searchCondition);
+
+    //exceutes table query with paramaters
+    db.query(
+      tableQuery,
+      [...searchParams, itemsPerPage, offset],
+      (err, results) => {
+        if (err) {
+          console.error("Executing search query", err);
+          return res.status(500).json({ error: "Search query failed" });
+        }
+        //executing coun t function matching searchTerm
+        db.query(countSql, searchParams, (err, countResults) => {
           if (err) {
             console.error("Executing count query", err);
             return res.status(500).json({ error: "Count query failed" });
           }
 
           const totalItems = countResults[0].total;
+
+          //sends pagented user dasta in json format, set header in response to total matching records
           res.setHeader("X-Total-Count", totalItems);
           res.json(results);
-        }
-      );
-    }
-  );
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Unexpected error", error);
+    res.status(500).json({ error: "Unexpected error occurred" });
+  }
 };
 
 module.exports = {

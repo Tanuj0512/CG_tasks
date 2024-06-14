@@ -83,96 +83,94 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, reactive } from "vue";
 import axios from "axios";
 
-export default {
-  name: "UserForm",
-  props: {
-    editUser: {
-      type: Object,
-      default: null,
-    },
+const props = defineProps({
+  editUser: {
+    type: Object,
+    default: null,
   },
-  data() {
-    return {
-      user: {
-        firstName: "",
-        lastName: "",
-        dob: "",
-        address: "",
-        mobile: "",
-      },
-      errorMessages: {},
-      isSubmitting: false,
-    };
-  },
+});
 
-  methods: {
-    async validateUser() {
-      try {
-        await axios.post("/api/validateUser/", this.user);
-        this.errorMessages = {}; // clear error messages
-        return true;
-      } catch (error) {
-        if (error.response && error.response.data) {
-          const errorMessages = error.response.data.errors;
-          this.errorMessages = errorMessages.reduce((acc, message) => {
-            const field = message.split('"')[1]; // exact field name causing error
-            acc[field] = message; // map error message to field name
-            return acc;
-          }, {});
-        }
-        return false;
-      }
-    },
-    getErrorMessage(fieldName, errorObject) {
-      const errorCode = Object.keys(errorObject)[0];
-      return errorObject[errorCode];
-    },
-    clearErrorMessage(fieldName) {
-      // Clear the error message when the user starts typing again
-      if (this.errorMessages[fieldName]) {
-        this.errorMessages[fieldName] = "";
-      }
-    },
+const emit = defineEmits(["add-user"]);
+const user = reactive({
+  firstName: "",
+  lastName: "",
+  dob: "",
+  address: "",
+  mobile: "",
+});
 
-    async handleSubmit() {
-      //validation
-      this.isSubmitting = true;
-      const isValid = await this.validateUser();
-      if (!isValid) {
-        this.isSubmitting = false;
-        return;
-      }
-      //if is valid
-      try {
-        const response = await axios.post("/api/users", this.user);
-        this.$emit("add-user", response.data);
-        alert("User added Sucessfully");
-        this.resetForm();
-      } catch (error) {
-        console.error("Error submitting form:", error);
-      }
-    },
-    resetForm() {
-      this.user = {
-        firstName: "",
-        lastName: "",
-        dob: "",
-        address: "",
-        mobile: "",
-      };
-      this.errorMessages = {};
-    },
-  },
+const errorMessages = reactive({});
+const isSubmitting = ref(false);
+
+const validateUser = async () => {
+  try {
+    await axios.post("/api/validateUser/", user);
+    Object.keys(errorMessages).forEach((key) => {
+      errorMessages[key] = ""; // Clear error messages
+    });
+    return true;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      const errors = error.response.data.errors;
+      errors.forEach((message) => {
+        const field = message.split('"')[1]; // Extract field name from message
+        errorMessages[field] = message; // Map error message to field name
+      });
+    }
+    return false;
+  }
+};
+
+const clearErrorMessage = (fieldName) => {
+  if (errorMessages[fieldName]) {
+    errorMessages[fieldName] = "";
+  }
+};
+
+const handleSubmit = async () => {
+  isSubmitting.value = true;
+  const isValid = await validateUser();
+  if (!isValid) {
+    isSubmitting.value = false;
+    return;
+  }
+  try {
+    const response = await axios.post("/api/users", user);
+    emit("add-user", response.data);
+    alert("User added successfully");
+    resetForm();
+  } catch (error) {
+    console.error("Error submitting form:", error);
+  }
+};
+
+const resetForm = () => {
+  Object.keys(user).forEach((key) => {
+    user[key] = "";
+  });
+  Object.keys(errorMessages).forEach((key) => {
+    errorMessages[key] = "";
+  });
 };
 </script>
+
+<style scoped>
+.error-message {
+  color: red;
+}
+.req {
+  color: red;
+}
+</style>
 
 
 <style scoped>
 form.user-form {
-  background-color:#dbdfd8;;
+  background-color: #dbdfd8;
   padding: 3vh;
   border-radius: 10px;
 }

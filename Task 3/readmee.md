@@ -69,7 +69,7 @@ If there are no validation errors, the next() function is called, passing contro
 
 //search
 
-The searchUsers method allows the component to dynamically update the displayed list of users based on the search term entered by the user. Here's a summarized step-by-step explanation:
+The fetchUsers method allows the component to dynamically update the displayed list of users based on the search term entered by the user. Here's a summarized step-by-step explanation:
 
 Check if there is a search term.
 If there is a search term:
@@ -92,3 +92,254 @@ It returns the user data along with a header indicating the total number of item
 
 //search,sort,pagenation -http://localhost:3000/users/search?term=jo&page=1&itemsPerPage=10&sortBy=lastName&order=asc
 //sort, pagenation - http://localhost:3000/users/sort?sortBy=firstName&order=asc&page=2&itemsPerPage=10
+
+
+//emit the data from fetchUser and pass as a function
+
+
+<template>
+  <div class="tableInfo">
+    <h3>Users Data</h3>
+    <div class="table-header">
+      <div class="search-bar">
+        <label>Search Bar</label>
+        <input
+          type="text"
+          placeholder="...search"
+          v-model="searchTerm"
+          @input="fetchUsers"
+          class="search-input"
+        />
+      </div>
+      <div class="sortingBar">
+        <label for="dropdown"> Items: </label>
+        <select
+          v-model="dropDownField"
+          @change="itemsDropdown"
+          class="select-input"
+        >
+          <option v-for="option in itemOptions" :key="option" :value="option">
+            {{ option }}
+          </option>
+        </select>
+      </div>
+
+      <div class="sortingBar">
+        <label for="sortField">Sort By:</label>
+        <select v-model="sortField" @change="fetchUsers" class="select-input">
+          <option
+            v-for="option in sortingOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.text }}
+          </option>
+        </select>
+        <label for="sortOrder">Order:</label>
+        <select v-model="sortOrder" @change="fetchUsers" class="select-input">
+          <option
+            v-for="option in orderingOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.text }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <div v-if="showSuccessMessage" class="success-message">
+        Data updated successfully!
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Mobile</th>
+            <th>Address</th>
+            <th>DOB</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody class="tableBody" v-if="filteredUsers.length > 0">
+          <tr v-for="(user, index) in filteredUsers" :key="index">
+            <td>
+              <span v-if="editIndex !== index">{{ user.firstName }}</span>
+              <input
+                v-else
+                v-model="editableUser.firstName"
+                class="input-field"
+              />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.lastName }}</span>
+              <input
+                v-else
+                v-model="editableUser.lastName"
+                class="input-field"
+              />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.mobile }}</span>
+              <input v-else v-model="editableUser.mobile" class="input-field" />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.address }}</span>
+              <input
+                v-else
+                v-model="editableUser.address"
+                class="input-field"
+              />
+            </td>
+            <td>
+              <span v-if="editIndex !== index">{{ user.dob }}</span>
+              <input
+                v-else
+                v-model="editableUser.dob"
+                type="date"
+                class="input-field"
+              />
+            </td>
+            <td class="buttons-align">
+              <button
+                v-if="editIndex !== index"
+                class="edit-button"
+                @click="startEditing(index, user)"
+              >
+                Edit
+              </button>
+              <button v-else class="update-button" @click="saveEdit">
+                Update
+              </button>
+              <button
+                v-if="editIndex === index"
+                class="cancel-button"
+                @click="cancelEdit"
+              >
+                Cancel
+              </button>
+              <button
+                v-if="editIndex !== index"
+                class="delete-button"
+                @click="confirmDelete(user.id)"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <div v-else class="no-users-message"><h2>No user found</h2></div>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, watch, onMounted } from "vue";
+import axios from "axios";
+
+const props = defineProps({
+  users: {
+    type: Array,
+    required: true,
+  },
+});
+
+const emit = defineEmits(["update-user", "delete-user"]);
+
+const editIndex = ref(null);
+const editableUser = reactive({});
+const showSuccessMessage = ref(false);
+const searchTerm = ref("");
+const filteredUsers = ref([]);
+const sortField = ref("firstName");
+const sortOrder = ref("asc");
+const dropDownField = ref(10);
+const itemOptions = [5, 10, 25];
+const sortingOptions = [
+  { value: "firstName", text: "First Name" },
+  { value: "lastName", text: "Last Name" },
+  { value: "mobile", text: "Mobile" },
+  { value: "address", text: "Address" },
+  { value: "dob", text: "DOB" },
+];
+const orderingOptions = [
+  { value: "asc", text: "Ascending" },
+  { value: "desc", text: "Descending" },
+];
+
+watch(
+  () => props.users,
+  (newUsers) => {
+    filteredUsers.value = newUsers;
+  },
+  { immediate: true }
+);
+
+const startEditing = (index, user) => {
+  editIndex.value = index;
+  Object.assign(editableUser, { ...user });
+};
+
+const saveEdit = () => {
+  axios
+    .put(`/api/users/${editableUser.id}`, editableUser)
+    .then(() => {
+      emit("update-user", { ...editableUser });
+      editIndex.value = null;
+      showSuccessMessage.value = true;
+      setTimeout(() => {
+        showSuccessMessage.value = false;
+      }, 2000);
+    })
+    .catch((error) => {
+      console.error("Error updating user:", error);
+    });
+};
+
+const cancelEdit = () => {
+  editIndex.value = null;
+  Object.keys(editableUser).forEach((key) => {
+    editableUser[key] = "";
+  });
+};
+
+const confirmDelete = async (userId) => {
+  if (confirm("Are you sure you want to delete this user?")) {
+    try {
+      await axios.delete(`/api/users/${userId}`);
+      emit("delete-user", userId);
+      filteredUsers.value = filteredUsers.value.filter(
+        (user) => user.id !== userId
+      );
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  }
+};
+
+const fetchUsers = async () => {
+  const params = {
+    term: searchTerm.value,
+    sortBy: sortField.value,
+    order: sortOrder.value,
+  };
+
+  try {
+    const response = await axios.get("/api/users/search", { params });
+    filteredUsers.value = response.data;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+};
+
+const itemsDropdown = () => {
+  fetchUsers();
+};
+
+onMounted(() => {
+  fetchUsers();
+});
+</script>

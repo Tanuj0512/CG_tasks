@@ -11,16 +11,15 @@ const editUser = ref(null);
 
 onMounted(() => {
   //fetch users data from the api
-  axios.get("/api/users")
+  axios
+    .get("/api/users")
     .then((response) => {
       users.value = response.data;
     })
     .catch((error) => {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     });
 });
-
-
 
 function addUser(user) {
   // user.id = Date.now(); // Ensure a unique ID for new users
@@ -113,7 +112,7 @@ h1 {
 }
 
 .form[data-v-7a7a37b1] {
-    width: 30%;
-    padding-left: 1vw;
+  width: 30%;
+  padding-left: 1vw;
 }
 </style>

@@ -1,213 +1,3 @@
-<script>
-import axios from "axios";
-
-export default {
-  name: "UserTable",
-  props: {
-    users: {
-      type: Array,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      editIndex: null,
-      editableUser: {},
-      showSuccessMessage: false,
-      searchTerm: "", //search
-      filteredUsers: this.users, //sort
-      sortField: "firstName", //sort
-      sortOrder: "asc", //sort
-      currentPage: 1,
-      totalItems: 0,  
-      totalPages: 0,
-      itemsPerPage: 10, // Set default items per page to 10
-      dropDownField: 10, // Bind to the dropdown for items per page
-      itemOptions: [5, 10, 25],
-      sortingOptions: [
-        { value: "firstName", text: "First Name" },
-        { value: "lastName", text: "Last Name" },
-        { value: "mobile", text: "Mobile" },
-        { value: "address", text: "Address" },
-        { value: "dob", text: "DOB" },
-      ],
-      orderingOptions: [
-        { value: "asc", text: "Ascending" },
-        { value: "desc", text: "Descending" },
-      ],
-    };
-  },
-
-  watch: {
-    users(newUsers) {
-      this.filteredUsers = newUsers;
-    },
-  }, // Ensure that filteredUsers is updated whenever the users prop changes.
-
-  computed: {
-    paginatedUsers() {
-      //gives startig and ending fpr pagenation
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.filteredUsers.slice(start, end);
-    },
-
-    displayPages() {
-      const pages = [];
-      const startPage = Math.max(1, this.currentPage - 1);
-      const endPage = Math.min(this.totalPages, this.currentPage + 2);
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-      return pages;
-    },
-  },
-
-  methods: {
-    // Start editing a user
-    startEditing(index, user) {
-      this.editIndex = index;
-      this.editableUser = { ...user };
-    },
-
-    // Save edited user
-    saveEdit() {
-      axios
-        .put(`/api/users/${this.editableUser.id}`, this.editableUser)
-        .then(() => {
-          this.$emit("update-user", { ...this.editableUser });
-          this.editIndex = null;
-          this.showSuccessMessage = true;
-          setTimeout(() => {
-            this.showSuccessMessage = false;
-          }, 2000);
-        })
-        .catch((error) => {
-          console.error("Error updating user:", error);
-        });
-    },
-
-    // Cancel editing
-    cancelEdit() {
-      this.editIndex = null;
-      this.editableUser = {};
-    },
-
-    // Delete user
-    async confirmDelete(userId) {
-      if (confirm("Are you sure you want to delete this user?")) {
-        try {
-          await axios.delete(`/api/users/${userId}`);
-          this.$emit("delete-user", userId);
-          this.filteredUsers = this.filteredUsers.filter(
-            (user) => user.id !== userId
-          );
-          this.fetchUsers();
-        } catch (error) {
-          console.error("Error deleting user:", error);
-        }
-      }
-    },
-    // Search users
-    async searchUsers() {
-      // this.currentPage = 1; // Reset to first page on new search
-      if (this.searchTerm) {
-        try {
-          const response = await axios.get(`/api/users/search`, {
-            params: { term: this.searchTerm },
-          });
-          this.filteredUsers = response.data;
-          this.totalItems = response.data.length; // Update total items
-          this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage); // Update total pages
-        } catch (error) {
-          console.error("Error fetching search results:", error);
-        }
-      } else {
-        this.fetchUsers(); //whdn no search term
-      }
-    },
-
-    // Sort users
-    async sortUsers() {
-      // this.currentPage = 1;
-      try {
-        const response = await axios.get(`/api/users/sort`, {
-          params: {
-            sortBy: this.sortField,
-            order: this.sortOrder,
-            page: this.currentPage,
-            itemsPerPage: this.itemsPerPage,
-          },
-        });
-        this.filteredUsers = response.data;
-        this.totalItems = response.data.length;
-        // this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
-      } catch (error) {
-        console.error("Error fetching sorted results:", error);
-      }
-    },
-
-    //pagenation
-    async fetchUsers() {
-      try {
-        const response = await axios.get("/api/users/items", {
-          params: {
-            page: this.currentPage,
-            itemsPerPage: this.itemsPerPage,
-            sortBy: this.sortField, // Include sorting parameters
-            order: this.sortOrder, // Include sorting parameters
-          },
-        });
-        this.filteredUsers = response.data; // Update filtered users
-        this.totalItems = parseInt(response.headers["x-total-count"]); // Update total items
-        this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage); // Update total pages
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    },
-
-    //function to select items per page
-
-    async itemsDropdown() {
-      this.itemsPerPage = parseInt(this.dropDownField);
-      this.fetchUsers();
-    },
-
-    // Function to change page
-    async changePage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.currentPage = page;
-        // Retain sorting when changing page
-        await this.sortUsers();
-      }
-    },
-
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-        this.fetchUsers();
-      }
-    },
-
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-        this.fetchUsers();
-      }
-    },
-  },
-
-  mounted() {
-    const currentPage = parseInt(this.$route.query.page) || 1;
-    this.currentPage = currentPage;
-    this.fetchUsers();
-  },
-  created() {
-    this.fetchUsers();
-  },
-};
-</script>
-
 <template>
   <div class="tableInfo">
     <h3>Users Data</h3>
@@ -218,12 +8,12 @@ export default {
           type="text"
           placeholder="...search"
           v-model="searchTerm"
-          @keypress.enter="searchUsers"
+          @input="fetchUsers"
           class="search-input"
         />
       </div>
       <div class="sortingBar">
-        <lable for="dropdown"> Items: </lable>
+        <label for="dropdown">Items:</label>
         <select
           v-model="dropDownField"
           @change="itemsDropdown"
@@ -234,10 +24,9 @@ export default {
           </option>
         </select>
       </div>
-
       <div class="sortingBar">
         <label for="sortField">Sort By:</label>
-        <select v-model="sortField" @change="sortUsers" class="select-input">
+        <select v-model="sortField" @change="fetchUsers" class="select-input">
           <option
             v-for="option in sortingOptions"
             :key="option.value"
@@ -247,7 +36,7 @@ export default {
           </option>
         </select>
         <label for="sortOrder">Order:</label>
-        <select v-model="sortOrder" @change="sortUsers" class="select-input">
+        <select v-model="sortOrder" @change="fetchUsers" class="select-input">
           <option
             v-for="option in orderingOptions"
             :key="option.value"
@@ -262,7 +51,7 @@ export default {
       <div v-if="showSuccessMessage" class="success-message">
         Data updated successfully!
       </div>
-      <table class="table" v-if="filteredUsers.length > 0">
+      <table class="table">
         <thead>
           <tr>
             <th>First Name</th>
@@ -273,8 +62,8 @@ export default {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody class="tableBody">
-          <tr v-for="(user, index) in filteredUsers" :key="index">
+        <tbody class="tableBody" v-if="paginatedUsers .length > 0">
+          <tr v-for="(user, index) in paginatedUsers " :key="user.id">
             <td>
               <span v-if="editIndex !== index">{{ user.firstName }}</span>
               <input
@@ -340,23 +129,22 @@ export default {
             </td>
           </tr>
         </tbody>
+        <tbody v-else>
+          <tr>
+            <td colspan="6" class="no-users-message">No users found</td>
+          </tr>
+        </tbody>
       </table>
-      <div v-else class="no-users-message"><h2>No user found</h2></div>
     </div>
     <div class="lowerPart">
-      <div class="total_count">
-        <div class="pagination-controls">
-          <span>Showing {{ currentPage }} of {{ totalPages }} pages</span>
-        </div>
+      <div class="pagination-controls">
+        <span>Showing page {{ currentPage }} of {{ totalPages }}</span>
       </div>
-
       <div class="pagination">
         <button @click="changePage(1)" :disabled="currentPage === 1">
           &lt;&lt;
         </button>
-
         <button @click="prevPage" :disabled="currentPage === 1">&lt;</button>
-
         <button
           v-for="page in displayPages"
           :key="page"
@@ -365,11 +153,9 @@ export default {
         >
           {{ page }}
         </button>
-
         <button @click="nextPage" :disabled="currentPage === totalPages">
           &gt;
         </button>
-
         <button
           @click="changePage(totalPages)"
           :disabled="currentPage === totalPages"
@@ -380,6 +166,180 @@ export default {
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, reactive, watch, computed, onMounted } from "vue";
+import axios from "axios";
+
+const props = defineProps({
+  users: {
+    type: Array,
+    required: true,
+  },
+});
+
+const emit = defineEmits(["update-user", "delete-user"]);
+
+const editIndex = ref(null);
+const editableUser = reactive({});
+const showSuccessMessage = ref(false);
+const searchTerm = ref("");
+const filteredUsers = ref(10);
+const sortField = ref("firstName");
+const sortOrder = ref("asc");
+const currentPage = ref(1);
+const totalItems = ref(0);
+const totalPages = ref(0);
+const itemsPerPage = ref(10);
+const dropDownField = ref(10);
+const itemOptions = [5, 10, 25];
+const sortingOptions = [
+  { value: "firstName", text: "First Name" },
+  { value: "lastName", text: "Last Name" },
+  { value: "mobile", text: "Mobile" },
+  { value: "address", text: "Address" },
+  { value: "dob", text: "DOB" },
+];
+const orderingOptions = [
+  { value: "asc", text: "Ascending" },
+  { value: "desc", text: "Descending" },
+];
+
+watch(
+  () => props.users,
+  (newUsers) => {
+    filteredUsers.value = newUsers;
+    totalItems.value = newUsers.length;
+    totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value);
+    console.log('Updated Total Pages:', totalPages.value);
+  },
+  { immediate: true }
+);
+//determines start and end indices of filteredUsers value that shoud be displayed on current page
+const paginatedUsers = computed(() => {
+  return filteredUsers.value;
+});
+
+//to display page number in pagenation component
+const displayPages = computed(() => {
+  const pages = [];
+  const startPage = Math.max(1, currentPage.value - 1);
+  const endPage = Math.min(totalPages.value, currentPage.value + 2);
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
+
+const startEditing = (index, user) => {
+  editIndex.value = index;
+  Object.assign(editableUser, { ...user });
+};
+
+const saveEdit = () => {
+  axios
+    .put(`/api/users/${editableUser.id}`, editableUser)
+    .then(() => {
+      emit("update-user", { ...editableUser });
+      editIndex.value = null;
+      showSuccessMessage.value = true;
+      setTimeout(() => {
+        showSuccessMessage.value = false;
+      }, 2000);
+    })
+    .catch((error) => {
+      console.error("Error updating user:", error);
+    });
+};
+
+const cancelEdit = () => {
+  editIndex.value = null;
+  Object.keys(editableUser).forEach((key) => {
+    editableUser[key] = "";
+  });
+};
+
+const confirmDelete = async (userId) => {
+  if (confirm("Are you sure you want to delete this user?")) {
+    try {
+      await axios.delete(`/api/users/${userId}`);
+      emit("delete-user", userId);
+      filteredUsers.value = filteredUsers.value.filter(
+        (user) => user.id !== userId
+      );
+      // fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
+  }
+};
+
+const fetchUsers = async () => {
+  const params = {
+    term: searchTerm.value ,
+    page: currentPage.value ,
+    itemsPerPage: itemsPerPage.value ,
+    sortBy: sortField.value ,
+    order: sortOrder.value ,
+  };
+
+  console.log('Fetching users with params:', searchTerm.value, sortField.value, sortOrder.value, currentPage.value, itemsPerPage.value); // Log the params being sent
+
+  try {
+    const response = await axios.get("/api/users/search", { params });
+    console.log('API Response:', response.data); // Log the response data
+
+    filteredUsers.value = response.data;
+    totalItems.value = parseInt(response.headers["x-total-count"]);
+    totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value);
+
+    console.log('filteredUsers:', filteredUsers.value); // Log filtered users array
+    console.log('totalItems:', totalItems.value); // Log total items count
+    console.log('totalPages:', totalPages.value); // Log total pages count
+
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+};
+
+
+const itemsDropdown = () => {
+  itemsPerPage.value = parseInt(dropDownField.value);
+  fetchUsers();
+};
+
+const changePage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    console.log('Changing page to:', page);
+    currentPage.value = page;
+    fetchUsers();
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    console.log('Going to next page');
+    currentPage.value++;
+    fetchUsers();
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    console.log('Going to previous page');
+    currentPage.value--;
+    fetchUsers();
+  }
+};
+onMounted(() => { 
+  fetchUsers();
+  console.log('Component mounted. Initial values:');
+  console.log('currentPage:', currentPage.value);
+  console.log('totalPages:', totalPages.value);
+  console.log('filteredUsers:', filteredUsers.value);
+});
+
+</script>
 
 
 

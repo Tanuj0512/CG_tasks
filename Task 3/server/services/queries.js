@@ -31,6 +31,8 @@ const queryPagenation = {
   `,
 
   countQuery: searchCondition => `SELECT COUNT(*) as total FROM users ${searchCondition}`,
+
+  totalQuery: 'SELECT COUNT(*) as total FROM users'
 };
 
 

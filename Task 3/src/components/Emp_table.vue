@@ -283,7 +283,7 @@ const fetchUsers = async () => {
     order: sortOrder.value ,
   };
 
-  console.log('Fetching users with params:', searchTerm.value, sortField.value, sortOrder.value, currentPage.value, itemsPerPage.value); // Log the params being sent
+  // console.log('Fetching users with params:', searchTerm.value, sortField.value, sortOrder.value, currentPage.value, itemsPerPage.value); // Log the params being sent
 
   try {
     const response = await axios.get("/api/users/search", { params });
@@ -310,7 +310,7 @@ const itemsDropdown = () => {
 
 const changePage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
-    console.log('Changing page to:', page);
+    // console.log('Changing page to:', page);
     currentPage.value = page;
     fetchUsers();
   }
@@ -318,7 +318,7 @@ const changePage = (page) => {
 
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
-    console.log('Going to next page');
+    // console.log('Going to next page');
     currentPage.value++;
     fetchUsers();
   }
@@ -326,22 +326,20 @@ const nextPage = () => {
 
 const prevPage = () => {
   if (currentPage.value > 1) {
-    console.log('Going to previous page');
+    // console.log('Going to previous page');
     currentPage.value--;
     fetchUsers();
   }
 };
 onMounted(() => { 
   fetchUsers();
-  console.log('Component mounted. Initial values:');
-  console.log('currentPage:', currentPage.value);
-  console.log('totalPages:', totalPages.value);
-  console.log('filteredUsers:', filteredUsers.value);
+  // console.log('Component mounted. Initial values:');
+  // console.log('currentPage:', currentPage.value);
+  // console.log('totalPages:', totalPages.value);
+  // console.log('filteredUsers:', filteredUsers.value);
 });
 
 </script>
-
-
 
 <style scoped>
 .total_count[data-v-61ea5ed0] {
@@ -350,8 +348,11 @@ onMounted(() => {
   align-items: center;
 }
 
-.pagination-controls {
-  font-weight: 700;
+.pagination-controls[data-v-61ea5ed0] {
+    font-weight: 700;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .lowerPart {
   /* background-color: aqua; */
@@ -574,6 +575,3 @@ onMounted(() => {
   flex-grow: 1;
 }
 </style>
-
-
-

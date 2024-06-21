@@ -13,11 +13,3 @@ const db = promise_1.default.createPool({
     database: process.env.Mydatabase,
 });
 exports.default = db;
-// import mysql from "mysql2/promise";
-// const db = mysql.createPool({
-//   host: "localhost",
-//   user: "root",
-//   password: "T@nuj123",
-//   database: "crud_users",
-// });
-// export default db;

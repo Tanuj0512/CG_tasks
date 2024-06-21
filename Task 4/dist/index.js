@@ -20,9 +20,7 @@ const app = (0, express_1.default)();
 const port = 3010;
 app.use(body_parser_1.default.json());
 app.use(express_1.default.json());
-//use routes
 app.use("/", routes_1.default);
-//database connection
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
         try {

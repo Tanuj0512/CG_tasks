@@ -1,9 +1,10 @@
 import db from "../config/db";
 import { Request, Response } from "express";
 import queries from "../query/schema";
+import { RowDataPacket } from "mysql2/promise";
 
-interface User {
-  id: number;
+interface User  extends RowDataPacket{
+  id?: number;
   firstName: string;
   lastName: string;
   dob: string;
@@ -11,7 +12,7 @@ interface User {
   mobile: string;
 }
 
-interface CountResult {
+interface CountResult  extends RowDataPacket {
   affectedRows: number;
 }
 
@@ -80,73 +81,47 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-
 //search, sort, pagenation
-// export const pagenation = async (req: Request, res: Response) => {
-//   try {
-//     const searchTerm = (req.query.term as string) || "";
-//     const sortBy = (req.query.sortBy as string) || "firstName";
-//     const order = req.query.order === "desc" ? "DESC" : "ASC";
-//     const page = parseInt(req.query.page as string) || 1;
-//     const itemsPerPage = parseInt(req.query.itemsPerPage as string) || 10;
-//     const offset = (page - 1) * itemsPerPage;
+export const pagenation = async (req: Request, res: Response) => {
+  try {
+    const searchTerm = (req.query.term as string) || "";
+    const sortBy = (req.query.sortBy as string) || "firstName";
+    const order = req.query.order === "desc" ? "DESC" : "ASC";
+    const page = parseInt(req.query.page as string) || 1;
+    const itemsPerPage = parseInt(req.query.itemsPerPage as string) || 10;
+    const offset = (page - 1) * itemsPerPage;
 
-//     if (isNaN(page) || page < 1) {
-//       return res.status(400).json({ error: "Invalid page parameter" });
-//     }
+    if (isNaN(page) || page < 1 || isNaN(itemsPerPage) || itemsPerPage < 1) {
+      return res.status(400).json({ error: "Invalid pagination parameters" });
+    }
 
-//     if (isNaN(itemsPerPage) || itemsPerPage < 1) {
-//       return res.status(400).json({ error: "Invalid itemsPerPage parameter" });
-//     }
+    const validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
+    if (!validSortBy.includes(sortBy) || !["ASC", "DESC"].includes(order)) {
+      return res.status(400).json({ error: "Invalid sort parameters" });
+    }
 
-//     const validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
-//     if (!validSortBy.includes(sortBy)) {
-//       return res.status(400).json({ error: "Invalid sortBy parameter" });
-//     }
+    const searchCondition = queries.pagenationQuery.searchCondition(searchTerm);
+    const searchParams = searchTerm ? new Array(5).fill(`%${searchTerm}%`) : [];
+    const tableQuery = queries.pagenationQuery.tableQuery(
+      searchCondition,
+      sortBy,
+      order
+    );
+    const countSql = queries.pagenationQuery.countQuery(searchCondition);
 
-//     const validOrder = ["ASC", "DESC"];
-//     if (!validOrder.includes(order)) {
-//       return res.status(400).json({ error: "Invalid order parameter" });
-//     }
+    const [results ] = await db.query<User[]>(tableQuery, [
+      ...searchParams,
+      itemsPerPage,
+      offset,
+    ]);
+    const [[{ total }]] = await db.query<CountResult[]>(countSql, searchParams);
 
-//     const searchCondition = queries.pagenationQuery.searchCondition(searchTerm);
-//     const searchParams = searchTerm
-//       ? [
-//           `%${searchTerm}%`,
-//           `%${searchTerm}%`,
-//           `%${searchTerm}%`,
-//           `%${searchTerm}%`,
-//           `%${searchTerm}%`,
-//         ]
-//       : [];
+    res.setHeader("X-Total-Count", total.toString());
+    res.json(results);
+  } catch (error) {
+    console.error("Unexpected error", error);
+    res.status(500).json({ error: "Unexpected error occurred" });
+  }
+};
 
-//     const tableQuery = queries.pagenationQuery.tableQuery(
-//       searchCondition,
-//       sortBy,
-//       order
-//     );
-
-//     const countSql = queries.pagenationQuery.countQuery(searchCondition);
-
-//     const [results] = await db.query<User[]>(tableQuery, [
-//       ...searchParams,
-//       itemsPerPage,
-//       offset,
-//     ]);
-
-//     const [countResults] = await db.query<CountResult[]>(
-//       countSql,
-//       searchParams
-//     );
-
-//     const totalItems = countResults[0].total;
-
-//     res.setHeader("X-Total-Count", totalItems.toString());
-//     res.json(results);
-//   } catch (error) {
-//     console.error("Unexpected error", error);
-//     res.status(500).json({ error: "Unexpected error occurred" });
-//   }
-// };
-
-export default { getUser, addUser, updateUser, deleteUser };
+export default { getUser, addUser, updateUser, deleteUser, pagenation };

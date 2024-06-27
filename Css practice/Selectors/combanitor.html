@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSS Selector Examples</title>
+    <style>
+        /* Descendant Selector */
+        .container p {
+            color: blue;
+        }
+
+        /* Child Selector */
+        .container > div {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        /* Adjacent Sibling Selector */
+        h2 + p {
+            font-weight: bold;
+        }
+
+        /* General Sibling Selector */
+        h2 ~ p {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>This paragraph is blue.</p>
+        <div>
+            <p>This paragraph is inside a child div.</p>
+        </div>
+    </div>
+
+    <h2>Title</h2>
+    <p>This paragraph is directly after the h2.</p>
+    <p>This paragraph is italic because it follows an h2.</p>
+</body>
+</html>

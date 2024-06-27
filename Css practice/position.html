@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSS Position Examples</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Static Position */
+        .static {
+            background-color: lightblue;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+        }
+
+        /* Relative Position */
+        .relative-container {
+            position: relative;
+            height: 200px;
+            background-color: lightgray;
+        }
+        .relative {
+            position: relative;
+            top: 20px;
+            left: 20px;
+            background-color: lightgreen;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+        }
+
+        /* Absolute Position */
+        .absolute-container {
+            position: relative;
+            height: 400px;
+            background-color: lightyellow;
+        }
+        .absolute {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            background-color: lightsalmon;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+        }
+
+        /* Fixed Position */
+        .fixed {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: lightcoral;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+        }
+
+        /* Sticky Position */
+        .sticky-container {
+            height: 1200px; /* Height to create scrolling */
+            background-color: lightcyan;
+            padding: 20px;
+        }
+        .sticky {
+            position: sticky;
+            top: 10px;
+            background-color: lightseagreen;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="static">Static</div>
+
+    <div class="relative-container">
+        <div class="relative">Relative</div>
+    </div>
+
+    <div class="absolute-container">
+        <div class="absolute">Absolute</div>
+    </div>
+
+    <div class="fixed">Fixed</div>
+
+    <div class="sticky-container">
+        <p>Scroll down to see the sticky box.</p>
+        <div class="sticky">Sticky</div>
+    </div>
+</body>
+</html>

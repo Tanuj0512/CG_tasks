@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSS Animation Properties Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            background-color: #4CAF50;
+            margin: 20px;
+            animation-name: example; /* Name of the keyframes animation */
+            animation-duration: 4s; /* Duration of the animation */
+            animation-timing-function: ease-in-out; /* Speed curve of the animation */
+            animation-delay: 1s; /* Delay before the animation starts */
+            animation-iteration-count: infinite; /* Number of times the animation repeats */
+            animation-direction: alternate; /* Direction of the animation */
+            animation-fill-mode: both; /* Animation fill mode */
+            animation-play-state: running; /* Animation play state */
+        }
+
+        /* Keyframes for the animation */
+        @keyframes example {
+            0% {
+                transform: translateX(0);
+                background-color: #4CAF50;
+            }
+            50% {
+                transform: translateX(200px);
+                background-color: #FF5722;
+            }
+            100% {
+                transform: translateX(0);
+                background-color: #4CAF50;
+            }
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .control-button {
+            width: 100px;
+            height: 40px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 40px;
+            margin: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .control-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* CSS to simulate the pause/resume buttons using :hover */
+        .paused:hover + .box {
+            animation-play-state: paused;
+        }
+        .running:hover + .box {
+            animation-play-state: running;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="control-button paused">Pause</div>
+        <div class="control-button running">Resume</div>
+        <div class="box"></div>
+    </div>
+</body>
+</html>

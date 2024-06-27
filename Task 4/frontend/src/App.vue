@@ -19,7 +19,7 @@ const editUser = ref<User | null>(null);
 
 onMounted(() => {
   axios
-    .get<User[]>("/api/users") // Specify the response data type as User[]
+    .get("/api/users") 
     .then((response) => {
       users.value = response.data;
     })

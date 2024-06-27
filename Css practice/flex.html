@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flexbox Properties Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .flex-container {
+            display: flex;
+            flex-direction: row; 
+            flex-wrap: wrap; 
+            justify-content: space-around; 
+            align-items: center;
+            align-content: space-between; 
+            width: 80%;
+            height: 80%;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .flex-item {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 5px;
+            text-align: center;
+            flex-grow: 1; 
+            flex-shrink: 1; 
+            flex-basis: 100px; 
+        }
+
+        /* Individual item properties */
+        .order-1 {
+            order: 1; /* Sets the order of the item */
+        }
+
+        .order-2 {
+            order: 2; /* Sets the order of the item */
+        }
+
+        .grow-2 {
+            flex-grow: 2; /* Item grows twice as fast */
+        }
+
+        .shrink-0 {
+            flex-shrink: 0; /* Item does not shrink */
+        }
+
+        .basis-50 {
+            flex-basis: 50px; /* Initial size of the item */
+        }
+
+        .align-self-start {
+            align-self: flex-start; /* Aligns the item to the start */
+        }
+
+        .align-self-end {
+            align-self: flex-end; /* Aligns the item to the end */
+        }
+    </style>
+</head>
+<body>
+    <div class="flex-container">
+        <div class="flex-item order-2">Item 1</div>
+        <div class="flex-item grow-2">Item 2</div>
+        <div class="flex-item shrink-0">Item 3</div>
+        <div class="flex-item basis-50 align-self-start">Item 4</div>
+        <div class="flex-item align-self-end">Item 5</div>
+        <div class="flex-item order-1">Item 6</div>
+    </div>
+</body>
+</html>

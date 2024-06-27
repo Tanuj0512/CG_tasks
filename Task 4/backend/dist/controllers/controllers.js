@@ -19,6 +19,7 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = schema_1.default.getUserQuery.getUser;
     try {
         const [result] = yield db_1.default.query(sql);
+        console.log("Fetched users:", result);
         res.status(200).json(result);
     }
     catch (err) {

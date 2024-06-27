@@ -1,9 +1,9 @@
 import db from "../config/db";
 import { Request, Response } from "express";
 import queries from "../query/schema";
-import { RowDataPacket } from "mysql2/promise";
+import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 
-interface User  extends RowDataPacket{
+interface User extends RowDataPacket {
   id?: number;
   firstName: string;
   lastName: string;
@@ -12,7 +12,7 @@ interface User  extends RowDataPacket{
   mobile: string;
 }
 
-interface CountResult  extends RowDataPacket {
+interface CountResult extends RowDataPacket {
   affectedRows: number;
 }
 
@@ -21,6 +21,7 @@ export const getUser = async (req: Request, res: Response) => {
   const sql = queries.getUserQuery.getUser;
   try {
     const [result] = await db.query(sql);
+    console.log("Fetched users:", result);
     res.status(200).json(result);
   } catch (err) {
     console.error("Error fetching users:", err);
@@ -30,7 +31,7 @@ export const getUser = async (req: Request, res: Response) => {
 
 //add User
 export const addUser = async (req: Request, res: Response) => {
-  const { firstName, lastName, dob, address, mobile } = req.body;
+  const { firstName, lastName, dob, address, mobile } = req.body as User;
   const sql = queries.addUserQuery.addUser;
   const values = [firstName, lastName, dob, address, mobile];
 
@@ -47,12 +48,23 @@ export const addUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, dob, address, mobile } = req.body;
-    const sql = queries.updateUserQuery.updateUser;
+    const { firstName, lastName, dob, address, mobile } = req.body as User;
+    const checkUserSql = queries.getUserQuery.getUser;
+    const updateUserSql = queries.updateUserQuery.updateUser;
     const values = [firstName, lastName, dob, address, mobile, id];
-    const result = await db.query(sql, values);
 
-    if ((result as any).affectedRows === 0) {
+    const [userResult] = await db.query<User[]>(checkUserSql, [id]);
+
+    if (userResult.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const [updateResult] = await db.query<ResultSetHeader>(
+      updateUserSql,
+      values
+    );
+
+    if (updateResult.affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
     }
 
@@ -63,14 +75,23 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-//delete user
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const sql = queries.deleteUserQuery.deleteUser;
-    const result = await db.query(sql, [id]);
+    const checkUserSql = queries.getUserQuery.getUser;
+    const deleteUserSql = queries.deleteUserQuery.deleteUser;
 
-    if ((result as any).affectedRows === 0) {
+    // Check if the user exists
+    const [userResult] = await db.query<User[]>(checkUserSql, [id]);
+
+    if (userResult.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Delete the user
+    const [deleteResult] = await db.query<ResultSetHeader>(deleteUserSql, [id]);
+
+    if (deleteResult.affectedRows === 0) {
       return res.status(404).json({ error: "User not found" });
     }
 
@@ -109,7 +130,7 @@ export const pagenation = async (req: Request, res: Response) => {
     );
     const countSql = queries.pagenationQuery.countQuery(searchCondition);
 
-    const [results ] = await db.query<User[]>(tableQuery, [
+    const [results] = await db.query<User[]>(tableQuery, [
       ...searchParams,
       itemsPerPage,
       offset,

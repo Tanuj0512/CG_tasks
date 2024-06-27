@@ -45,10 +45,15 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { id } = req.params;
         const { firstName, lastName, dob, address, mobile } = req.body;
-        const sql = schema_1.default.updateUserQuery.updateUser;
+        const checkUserSql = schema_1.default.getUserQuery.getUser;
+        const updateUserSql = schema_1.default.updateUserQuery.updateUser;
         const values = [firstName, lastName, dob, address, mobile, id];
-        const result = yield db_1.default.query(sql, values);
-        if (result.affectedRows === 0) {
+        const [userResult] = yield db_1.default.query(checkUserSql, [id]);
+        if (userResult.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const [updateResult] = yield db_1.default.query(updateUserSql, values);
+        if (updateResult.affectedRows === 0) {
             return res.status(404).json({ error: "User not found" });
         }
         res.json({ id, firstName, lastName, dob, address, mobile });
@@ -62,9 +67,14 @@ exports.updateUser = updateUser;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const sql = schema_1.default.deleteUserQuery.deleteUser;
-        const result = yield db_1.default.query(sql, [id]);
-        if (result.affectedRows === 0) {
+        const checkUserSql = schema_1.default.getUserQuery.getUser;
+        const deleteUserSql = schema_1.default.deleteUserQuery.deleteUser;
+        const [userResult] = yield db_1.default.query(checkUserSql, [id]);
+        if (userResult.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const [deleteResult] = yield db_1.default.query(deleteUserSql, [id]);
+        if (deleteResult.affectedRows === 0) {
             return res.status(404).json({ error: "User not found" });
         }
         res.status(200).send("User deleted");

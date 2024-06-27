@@ -5,7 +5,7 @@ import validateUser from "../validation/validation";
 const router = express.Router();
 
 router.route("/users").get(getUser).post(validateUser ,addUser);
-router.route("/users/:id").put(updateUser) .delete(deleteUser)
+router.route("/users/:id").put(validateUser,updateUser) .delete(deleteUser)
 router.route("/users/pagenation").get(pagenation)
 
 

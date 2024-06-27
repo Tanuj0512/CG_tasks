@@ -1,15 +1,17 @@
 import express from "express";
 import bodyParser from "body-parser";
 import db from "./config/db";
+// import cors from 'cors'
 import userRoutes from './routes/routes';
 
 const app = express();
 const port = 3010;
 
+// app.use(cors())
 app.use(bodyParser.json());
 app.use(express.json());
 //use routes
-app.use("/", userRoutes);
+app.use("/api", userRoutes);
 
 //database connection
 async function startServer() {

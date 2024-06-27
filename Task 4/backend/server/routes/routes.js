@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var controllers_1 = require("../controllers/controllers");
+var validation_1 = require("../validation/validation");
+var router = express_1.default.Router();
+router.route("/users").get(controllers_1.getUser).post(validation_1.default, controllers_1.addUser);
+router.route("/users/:id").put(controllers_1.updateUser).delete(controllers_1.deleteUser);
+router.route("/users/pagenation").get(controllers_1.pagenation);
+exports.default = router;

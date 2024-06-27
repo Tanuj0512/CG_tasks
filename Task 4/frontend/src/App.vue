@@ -1,18 +1,25 @@
-<script setup>
-import { ref, onMounted, watch } from "vue";
-import User_details from "./components/Emp_details.vue";
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import User_details from "@/components/Emp_details.vue";
 import User_table from "./components/Emp_table.vue";
 import axios from "axios";
 
-const users = ref([]);
-//function create a ractive state using 'ref', means any change to it will automatically triger DOM
 
-const editUser = ref(null);
+interface User {
+  id?: number;
+  firstName: string;
+  lastName: string;
+  dob: string;
+  address: string;
+  mobile: string;
+}
+
+const users = ref<User[]>([]);
+const editUser = ref<User | null>(null);
 
 onMounted(() => {
-  //fetch users data from the api
   axios
-    .get("/api/users")
+    .get<User[]>("/api/users") // Specify the response data type as User[]
     .then((response) => {
       users.value = response.data;
     })
@@ -21,24 +28,22 @@ onMounted(() => {
     });
 });
 
-function addUser(user) {
-  // user.id = Date.now(); // Ensure a unique ID for new users
+function addUser(user: User) {
   users.value.push(user);
 }
 
-function deleteUser(userId) {
+function deleteUser(userId: number) {
   users.value = users.value.filter((user) => user.id !== userId);
 }
-//deletr user by id instead of index
 
-function setEditUser(user) {
+function setEditUser(user: User) {
   editUser.value = user;
 }
 
-function updateUser(updateUser) {
-  const index = users.value.findIndex((user) => user.id === updateUser.id);
+function updateUser(updatedUser: User) {
+  const index = users.value.findIndex((user) => user.id === updatedUser.id);
   if (index !== -1) {
-    users.value.splice(index, 1, updateUser);
+    users.value.splice(index, 1, updatedUser);
   }
   editUser.value = null;
 }
@@ -51,11 +56,7 @@ function updateUser(updateUser) {
     <div class="container">
       <div class="form">
         <User_details
-          @add-user="addUser"
-         
-        />
-        <!-- User_details pushes 'add user' (user data), it sets event lisytner to 'add-user' 
-      and 'add user' function is called whenever emint is pushed -->
+         @add-user="addUser" />
       </div>
       <div class="tablee">
         <User_table
@@ -64,20 +65,10 @@ function updateUser(updateUser) {
           @update-user="updateUser"
           @edit-user="setEditUser"
         />
-        <!-- : indicates user is a dynamic value ....'users'array is passed as a prop to 'User-table' -->
       </div>
     </div>
   </div>
 </template>
-
-
-
-
-
-
-
-
-
 
 <style scoped>
 .App {

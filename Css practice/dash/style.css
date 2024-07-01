@@ -1,0 +1,407 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.container {
+  margin: 1vh 0.5vw;
+  background: white;
+  border-radius: 20px;
+  height: 100vh;
+  width: 99vw;
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+  overflow: hidden;
+}
+
+.aside {
+  background: #8f00ff;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 90vh;
+  width: 15%;
+  margin: 3vh;
+  border-radius: 20px;
+  padding: 1rem;
+}
+
+.logo {
+  margin: 4vh 2.5vw;
+}
+
+.sideMenu {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  cursor: pointer;
+  color: aliceblue;
+}
+
+.sideMenu .fa-solid {
+  width: 1.5rem;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  height: 27%;
+  padding-left: 2vw;
+}
+
+.MainLogoImg {
+  width: 10vw;
+  border-radius: 10px;
+}
+
+.footerLogo {
+  background: white;
+  height: 30%;
+  width: 84%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 20px;
+  align-self: center;
+  padding-top: 2vh;
+}
+
+.footerLogoImg {
+  border-radius: 8px;
+  height: 14vh;
+  position: fixed;
+}
+
+.FooterLogoIcons {
+  display: flex;
+  justify-content: space-evenly;
+  width: 80%;
+  margin-top: 16vh;
+}
+
+.FooterLogoIcons .fa-solid {
+  color: #242020;
+  font-size: large;
+  cursor: pointer;
+}
+
+.footerIconText {
+  color: blue;
+  position: absolute;
+  margin-top: 21vh;
+  cursor: pointer;
+}
+
+header.leftSideHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.sideContainer {
+  margin: 3vh;
+  width: 90vw;
+  height: max-content;
+  /* overflow-y: auto; */
+}
+
+.profile {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.profilePicture {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+.profileText p {
+  margin: 0;
+}
+
+.profileText h2 {
+  margin: 0;
+}
+
+.rightSideHeader {
+  display: flex;
+  flex-direction: row;
+  width: 36%;
+  justify-content: space-between;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.search-container input[type="text"] {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+  outline: none;
+}
+
+.search-container button {
+  background-color: #8f00ff;
+  color: aliceblue;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-container button:hover,
+i.fa-regular:hover {
+  background-color: #6a0080;
+}
+
+.search-container button i {
+  font-size: 18px;
+}
+
+i.fa-regular {
+  color: aliceblue;
+  background-color: #8f00ff;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.coursesTab {
+  background-color: aliceblue;
+  height: max-content;
+  border-radius: 20px;
+  width: 76vw;
+}
+
+.coursesTabHeader {
+  display: flex;
+  flex-direction: row;
+  padding: 1vh 2vw;
+  justify-content: space-between;
+}
+
+p.coursesTabHeading {
+  color: #8f00ff;
+}
+
+button.seeAll {
+  background-color: aliceblue;
+  border: 1px solid #8f00ff;
+  border-radius: 30px;
+  width: 5vw;
+  height: 5vh;
+}
+
+.courses {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+
+.courseDisplay {
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+  height: 36vh;
+  width: 20vw;
+  min-width: 250px;
+}
+
+.courseDisplay img {
+  width: 100%;
+  max-width: 300px;
+  height: 18vh;
+  border-radius: 8px;
+  position: relative;
+  bottom: 7vh;
+}
+
+.courseDetails {
+  display: flex;
+  flex-direction: column;
+  margin-top: -5vh;
+  width: 19.5vw;
+}
+
+.courseTitle {
+  font-size: 1.3rem;
+  margin: 0 0 10px;
+  color: #333;
+  height: 6vh;
+}
+
+.ratingsAndDuration {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  height: 10vh;
+  justify-content: space-between;
+}
+
+.completationSider {
+  height: 9vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.rating,
+.duration {
+  margin: 0 10px 0 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.completation {
+  background-color: white;
+  border-radius: 12px;
+  padding: 5px 10px;
+  color: #333;
+  font-size: 1rem;
+}
+
+.resumeLearning {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.resumeLearning:hover {
+  background-color: #0056b3;
+}
+
+.statisticsTab {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 76vw;
+  border-radius: 20px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  margin-top: 2vh;
+}
+
+img.charts {
+  height: 20vh;
+  border-radius: 10px;
+  margin-top: 2vh;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .aside {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    margin: 0;
+  }
+
+  .logo,
+  .footerLogo {
+    display: none;
+  }
+
+  .items {
+    flex-direction: row;
+    justify-content: space-evenly;
+    height: auto;
+    padding-left: 0;
+  }
+
+  .sideContainer {
+    width: 100%;
+  }
+
+  .coursesTab,
+  .statisticsTab {
+    width: 100%;
+  }
+
+  .rightSideHeader {
+    width: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .search-container {
+    max-width: none;
+    width: 80%;
+  }
+
+  .courseDisplay {
+    width: 90%;
+    margin: 10px 0;
+  }
+
+  .courseDetails {
+    width: 100%;
+  }
+
+  .statisticsTab {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profilePicture {
+    width: 80px;
+    height: 80px;
+  }
+
+  .rightSideHeader {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  .courseDisplay {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .statisticsTab {
+    width: 100%;
+  }
+}

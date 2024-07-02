@@ -102,8 +102,8 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-//search, sort, pagenation
-export const pagenation = async (req: Request, res: Response) => {
+//search, sort, pagination
+export const pagination = async (req: Request, res: Response) => {
   try {
     const searchTerm = (req.query.term as string) || "";
     const sortBy = (req.query.sortBy as string) || "firstName";
@@ -121,14 +121,14 @@ export const pagenation = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid sort parameters" });
     }
 
-    const searchCondition = queries.pagenationQuery.searchCondition(searchTerm);
+    const searchCondition = queries.paginationQuery.searchCondition(searchTerm);
     const searchParams = searchTerm ? new Array(5).fill(`%${searchTerm}%`) : [];
-    const tableQuery = queries.pagenationQuery.tableQuery(
+    const tableQuery = queries.paginationQuery.tableQuery(
       searchCondition,
       sortBy,
       order
     );
-    const countSql = queries.pagenationQuery.countQuery(searchCondition);
+    const countSql = queries.paginationQuery.countQuery(searchCondition);
 
     const [results] = await db.query<User[]>(tableQuery, [
       ...searchParams,
@@ -145,4 +145,4 @@ export const pagenation = async (req: Request, res: Response) => {
   }
 };
 
-export default { getUser, addUser, updateUser, deleteUser, pagenation };
+export default { getUser, addUser, updateUser, deleteUser, pagination };

@@ -83,7 +83,8 @@ const props = defineProps<{
   editUser: User | null;
 }>();
 
-const emit = defineEmits(["add-user", "update-user"]);
+// const emit = defineEmits(["add-user", "update-user"]);
+const emit = defineEmits(["add-user"]);
 const user = reactive<User>({
   firstName: "",
   lastName: "",
@@ -95,16 +96,16 @@ const user = reactive<User>({
 const errorMessages = reactive<{ [key in keyof User]?: string }>({});
 const isSubmitting = ref(false);
 
-watch(
-  () => props.editUser,
-  (newUser) => {
-    if (newUser) {
-      Object.assign(user, newUser);
-    } else {
-      resetForm();
-    }
-  }
-);
+// watch(
+//   () => props.editUser,
+//   (newUser) => {
+//     if (newUser) {
+//       Object.assign(user, newUser);
+//     } else {
+//       resetForm();
+//     }
+//   }
+// );
 
 const validateUser = async (): Promise<boolean> => {
   try {
@@ -125,6 +126,31 @@ const validateUser = async (): Promise<boolean> => {
   }
 };
 
+// const handleSubmit = async (): Promise<void> => {
+//   isSubmitting.value = true;
+//   const isValid = await validateUser();
+//   if (!isValid) {
+//     isSubmitting.value = false;
+//     return;
+//   }
+//   try {
+//     let response: AxiosResponse<User>;
+//     if (props.editUser) {
+//       response = await axios.put(`/api/users/${props.editUser.id}`, user);
+//       emit("update-user", response.data);
+//       alert("User updated successfully");
+//     } 
+//     else {
+//       response = await axios.post("/api/users", user);
+//       emit("add-user", response.data);
+//       alert("User added successfully");
+//     }
+//     resetForm();
+//   } catch (error) {
+//     console.error("Error submitting form:", error);
+//   }
+//   isSubmitting.value = false;
+// };
 const handleSubmit = async (): Promise<void> => {
   isSubmitting.value = true;
   const isValid = await validateUser();
@@ -133,16 +159,9 @@ const handleSubmit = async (): Promise<void> => {
     return;
   }
   try {
-    let response: AxiosResponse<User>;
-    if (props.editUser) {
-      response = await axios.put(`/api/users/${props.editUser.id}`, user);
-      emit("update-user", response.data);
-      alert("User updated successfully");
-    } else {
-      response = await axios.post("/api/users", user);
-      emit("add-user", response.data);
-      alert("User added successfully");
-    }
+    const response = await axios.post("/api/users", user);
+    emit("add-user", response.data);
+    alert("User added successfully");
     resetForm();
   } catch (error) {
     console.error("Error submitting form:", error);

@@ -180,14 +180,14 @@ interface User {
   mobile: string;
 }
 
-
 const editableUser = reactive<User>({
   firstName: "",
   lastName: "",
   dob: "",
   address: "",
-  mobile: ""
+  mobile: "",
 });
+
 const props = defineProps<{
   users: User[];
 }>();
@@ -225,7 +225,7 @@ watch(
     filteredUsers.value = newUsers;
     totalItems.value = newUsers.length;
     totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value);
-    console.log('Updated Total Pages:', totalPages.value);
+    // console.log("Updated Total Pages:", totalPages.value);
   },
   { immediate: true }
 );
@@ -296,10 +296,14 @@ const fetchUsers = async () => {
   };
 
   try {
-    const response = await axios.get("/api/users/search", { params });
+    const response = await axios.get("/api/users/pagination", { params });
+    // console.log("API Response:", response.data);
     filteredUsers.value = response.data;
     totalItems.value = parseInt(response.headers["x-total-count"]);
     totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value);
+    // console.log("filteredUsers:", filteredUsers.value); // Log filtered users array
+    // console.log("totalItems:", totalItems.value); // Log total items count
+    // console.log("totalPages:", totalPages.value); // Log total pages count
   } catch (error) {
     console.error("Error fetching users:", error);
   }

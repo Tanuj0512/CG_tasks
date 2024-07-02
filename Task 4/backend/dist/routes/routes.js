@@ -9,5 +9,5 @@ const validation_1 = __importDefault(require("../validation/validation"));
 const router = express_1.default.Router();
 router.route("/users").get(controllers_1.getUser).post(validation_1.default, controllers_1.addUser);
 router.route("/users/:id").put(validation_1.default, controllers_1.updateUser).delete(controllers_1.deleteUser);
-router.route("/users/pagenation").get(controllers_1.pagenation);
+router.route("/users/pagination").get(controllers_1.pagination);
 exports.default = router;

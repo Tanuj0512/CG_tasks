@@ -12,7 +12,7 @@ const updateUserQuery = {
 const deleteUserQuery = {
     deleteUser: "DELETE FROM users WHERE id = ?",
 };
-const pagenationQuery = {
+const paginationQuery = {
     searchCondition: (searchTerm) => searchTerm
         ? "WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?"
         : "",
@@ -30,5 +30,5 @@ exports.default = {
     addUserQuery,
     updateUserQuery,
     deleteUserQuery,
-    pagenationQuery,
+    paginationQuery,
 };

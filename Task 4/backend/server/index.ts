@@ -1,13 +1,13 @@
 import express from "express";
 import bodyParser from "body-parser";
 import db from "./config/db";
-// import cors from 'cors'
+import cors from 'cors';
 import userRoutes from './routes/routes';
 
 const app = express();
 const port = 3010;
 
-// app.use(cors())
+app.use(cors())  
 app.use(bodyParser.json());
 app.use(express.json());
 //use routes
@@ -16,7 +16,7 @@ app.use("/api", userRoutes);
 //database connection
 async function startServer() {
   try {
-    await db;
+    await db.getConnection;
     console.log('Connected to the database');
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
@@ -27,3 +27,5 @@ async function startServer() {
 }
 
 startServer();
+
+//http:localhost:3010/api/users/pagination?term=Wan&page=2&itemsPerPage=10&sortBy=firstName&order=asc

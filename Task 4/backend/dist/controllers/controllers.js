@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pagenation = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
+exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
 const db_1 = __importDefault(require("../config/db"));
 const schema_1 = __importDefault(require("../query/schema"));
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -86,7 +86,7 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteUser = deleteUser;
-const pagenation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const pagination = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const searchTerm = req.query.term || "";
         const sortBy = req.query.sortBy || "firstName";
@@ -101,10 +101,10 @@ const pagenation = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!validSortBy.includes(sortBy) || !["ASC", "DESC"].includes(order)) {
             return res.status(400).json({ error: "Invalid sort parameters" });
         }
-        const searchCondition = schema_1.default.pagenationQuery.searchCondition(searchTerm);
+        const searchCondition = schema_1.default.paginationQuery.searchCondition(searchTerm);
         const searchParams = searchTerm ? new Array(5).fill(`%${searchTerm}%`) : [];
-        const tableQuery = schema_1.default.pagenationQuery.tableQuery(searchCondition, sortBy, order);
-        const countSql = schema_1.default.pagenationQuery.countQuery(searchCondition);
+        const tableQuery = schema_1.default.paginationQuery.tableQuery(searchCondition, sortBy, order);
+        const countSql = schema_1.default.paginationQuery.countQuery(searchCondition);
         const [results] = yield db_1.default.query(tableQuery, [
             ...searchParams,
             itemsPerPage,
@@ -119,5 +119,5 @@ const pagenation = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(500).json({ error: "Unexpected error occurred" });
     }
 });
-exports.pagenation = pagenation;
-exports.default = { getUser: exports.getUser, addUser: exports.addUser, updateUser: exports.updateUser, deleteUser: exports.deleteUser, pagenation: exports.pagenation };
+exports.pagination = pagination;
+exports.default = { getUser: exports.getUser, addUser: exports.addUser, updateUser: exports.updateUser, deleteUser: exports.deleteUser, pagination: exports.pagination };

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import User_details from "@/components/Emp_details.vue";
+import User_details from "./components/Emp_details.vue";
 import User_table from "./components/Emp_table.vue";
 import axios from "axios";
 

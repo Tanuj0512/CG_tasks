@@ -4,18 +4,33 @@ import queries from "../query/schema";
 import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import multer from "multer";
 import path from "path";
+import bcrypt from "bcrypt";
+import { createTokens } from "../middleware/jwt";
 
 interface User extends RowDataPacket {
-  id?: number;
+  // id?: number;
   firstName: string;
   lastName: string;
   dob: string;
   address: string;
   mobile: string;
 }
+interface user extends RowDataPacket {
+  id: number; // Make id non-optional to match createTokens
+  username: string;
+  password: string; // Include password as it's used in login
+}
 
 interface CountResult extends RowDataPacket {
   affectedRows: number;
+}
+
+interface UserRequest extends Request {
+  body: {
+    username: string;
+    password: string;
+    id: number;
+  };
 }
 
 //get Users
@@ -151,4 +166,89 @@ export const pagination = async (req: Request, res: Response) => {
   }
 };
 
-export default { getUser, addUser, updateUser, deleteUser, pagination };
+//new user register
+export const registerUser = async (
+  req: UserRequest,
+  res: Response
+): Promise<void> => {
+  const { username, password } = req.body;
+
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const connection = await db.getConnection();
+    const insertUserSql = queries.registerUserQuery.registerUser;
+    const insertUserValues = [username, hash];
+
+    await connection.query(insertUserSql, insertUserValues);
+
+    connection.release();
+
+    res.json("User Registered");
+  } catch (err) {
+    console.error("Error registering user:", err);
+    if (err === "ER_DUP_ENTRY") {
+      res.status(409).json({ error: "Username already exists" });
+    } else {
+      res.status(500).json({ error: "Failed to register user" });
+    }
+  }
+};
+
+//user login
+export const userLogin = async (
+  req: UserRequest,
+  res: Response
+): Promise<void> => {
+  const { username, password } = req.body;
+  try {
+    const connection = await db.getConnection();
+    try {
+      //query user by userName
+      const [rows] = await connection.execute<RowDataPacket[]>(
+        queries.userLoginQuery.userLogin,
+        [username]
+      );
+      if (!rows || rows.length === 0) {
+        res.status(404).json({ error: "User not found" });
+        return;
+      }
+      const user = rows[0] as user;
+
+      const isPasswordValid = await bcrypt.compare(
+        password,
+        user.password as string
+      );
+
+      if (!isPasswordValid) {
+        res.status(401).json({ error: "Invalid password" });
+        return;
+      } else {
+        const accessToken = createTokens({
+          id: user.id,
+          username: user.username,
+          isAdmin: user.isAdmin,
+        });
+        res.cookie("access-token", accessToken, {
+          maxAge: 60 * 60 * 24 * 30 * 1000,
+        });
+        res.json({ message: "Login successful" });
+      }
+    } finally {
+      // Release the connection back to the pool
+      connection.release();
+    }
+  } catch (err) {
+    console.error("Error logging in:", err);
+    res.status(500).json({ error: "Failed to log in" });
+  }
+};
+
+export default {
+  getUser,
+  addUser,
+  updateUser,
+  deleteUser,
+  pagination,
+  registerUser,
+  userLogin,
+};

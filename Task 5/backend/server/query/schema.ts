@@ -35,10 +35,20 @@ const paginationQuery = {
   totalQuery: "SELECT COUNT(*) as total FROM users",
 };
 
+
+const registerUserQuery = {
+  registerUser: "INSERT INTO auth_users (username, password) VALUES (?, ?)"
+}
+const userLoginQuery = {
+  userLogin: "SELECT * FROM auth_users WHERE username = ?"
+  }
+
 export default {
   getUserQuery,
   addUserQuery,
   updateUserQuery,
   deleteUserQuery,
   paginationQuery,
+  registerUserQuery,
+  userLoginQuery
 };

@@ -12,9 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
+exports.userLogin = exports.registerUser = exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
 const db_1 = __importDefault(require("../config/db"));
 const schema_1 = __importDefault(require("../query/schema"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const jwt_1 = require("../middleware/jwt");
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = schema_1.default.getUserQuery.getUser;
     try {
@@ -124,4 +126,72 @@ const pagination = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.pagination = pagination;
-exports.default = { getUser: exports.getUser, addUser: exports.addUser, updateUser: exports.updateUser, deleteUser: exports.deleteUser, pagination: exports.pagination };
+const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    try {
+        const hash = yield bcrypt_1.default.hash(password, 10);
+        const connection = yield db_1.default.getConnection();
+        const insertUserSql = schema_1.default.registerUserQuery.registerUser;
+        const insertUserValues = [username, hash];
+        yield connection.query(insertUserSql, insertUserValues);
+        connection.release();
+        res.json("User Registered");
+    }
+    catch (err) {
+        console.error("Error registering user:", err);
+        if (err === "ER_DUP_ENTRY") {
+            res.status(409).json({ error: "Username already exists" });
+        }
+        else {
+            res.status(500).json({ error: "Failed to register user" });
+        }
+    }
+});
+exports.registerUser = registerUser;
+const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    try {
+        const connection = yield db_1.default.getConnection();
+        try {
+            const [rows] = yield connection.execute(schema_1.default.userLoginQuery.userLogin, [username]);
+            if (!rows || rows.length === 0) {
+                res.status(404).json({ error: "User not found" });
+                return;
+            }
+            const user = rows[0];
+            const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
+            if (!isPasswordValid) {
+                res.status(401).json({ error: "Invalid password" });
+                return;
+            }
+            else {
+                const accessToken = (0, jwt_1.createTokens)({
+                    id: user.id,
+                    username: user.username,
+                    isAdmin: user.isAdmin,
+                });
+                res.cookie("access-token", accessToken, {
+                    maxAge: 60 * 60 * 24 * 30 * 1000,
+                });
+                res.json({ message: "Login successful" });
+            }
+        }
+        finally {
+            connection.release();
+        }
+    }
+    catch (err) {
+        console.error("Error logging in:", err);
+        res.status(500).json({ error: "Failed to log in" });
+    }
+});
+exports.userLogin = userLogin;
+exports.default = {
+    getUser: exports.getUser,
+    addUser: exports.addUser,
+    updateUser: exports.updateUser,
+    deleteUser: exports.deleteUser,
+    pagination: exports.pagination,
+    registerUser: exports.registerUser,
+    userLogin: exports.userLogin,
+};

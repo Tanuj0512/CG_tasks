@@ -17,4 +17,6 @@ router
     .put(fileUpoad_1.default.single("file"), validation_1.default, controllers_1.updateUser)
     .delete(controllers_1.deleteUser);
 router.route("/users/pagination").get(controllers_1.pagination);
+router.post("/register", controllers_1.registerUser);
+router.post("/login", controllers_1.userLogin);
 exports.default = router;

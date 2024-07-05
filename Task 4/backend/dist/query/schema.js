@@ -25,10 +25,14 @@ const paginationQuery = {
     countQuery: (searchCondition) => `SELECT COUNT(*) as total FROM users ${searchCondition}`,
     totalQuery: "SELECT COUNT(*) as total FROM users",
 };
+const updateUserDocumentQuery = {
+    updateUserWithDocument: `UPDATE users SET documentFileName = ? WHERE id = ?;`
+};
 exports.default = {
     getUserQuery,
     addUserQuery,
     updateUserQuery,
     deleteUserQuery,
     paginationQuery,
+    updateUserDocumentQuery
 };

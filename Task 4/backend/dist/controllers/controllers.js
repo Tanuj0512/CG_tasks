@@ -12,9 +12,60 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
+exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = exports.uploadDocument = void 0;
 const db_1 = __importDefault(require("../config/db"));
 const schema_1 = __importDefault(require("../query/schema"));
+const path_1 = __importDefault(require("path"));
+const multer_1 = __importDefault(require("multer"));
+const storage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./uploads");
+    },
+    filename: function (req, file, cb) {
+        const ext = path_1.default.extname(file.originalname);
+        cb(null, `${req.params.userId}-${Date.now()}${ext}`);
+    },
+});
+const fileFilter = function (req, file, cb) {
+    const allowedFileTypes = [".jpg", ".jpeg", ".png", ".pdf"];
+    const ext = path_1.default.extname(file.originalname).toLowerCase();
+    if (allowedFileTypes.includes(ext)) {
+        cb(null, true);
+    }
+    else {
+        cb(new Error("Only .jpg, .jpeg, .png, .pdf files are allowed"));
+    }
+};
+const upload = (0, multer_1.default)({ storage: storage, fileFilter: fileFilter }).single("document");
+const uploadDocument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userId } = req.params;
+        upload(req, res, function (err) {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (err) {
+                    console.error("Error uploading document:", err);
+                    return res.status(400).json({ error: err.message });
+                }
+                if (!req.file) {
+                    return res.status(400).json({ error: "No file uploaded" });
+                }
+                const documentFileName = req.file.filename;
+                const updateUserSql = schema_1.default.updateUserDocumentQuery.updateUserWithDocument;
+                const values = [documentFileName, userId];
+                const [updateResult] = yield db_1.default.query(updateUserSql, values);
+                if (updateResult.affectedRows === 0) {
+                    return res.status(404).json({ error: "User not found" });
+                }
+                res.status(200).json({ message: "Document uploaded successfully" });
+            });
+        });
+    }
+    catch (err) {
+        console.error("Error uploading document:", err);
+        res.status(500).json({ error: "Failed to upload document" });
+    }
+});
+exports.uploadDocument = uploadDocument;
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = schema_1.default.getUserQuery.getUser;
     try {

@@ -123,8 +123,8 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-//search, sort, pagination
-export const pagination = async (req: Request, res: Response) => {
+//search, sort, paginatation
+export const paginatation = async (req: Request, res: Response) => {
   try {
     const searchTerm = (req.query.term as string) || "";
     const sortBy = (req.query.sortBy as string) || "firstName";
@@ -134,7 +134,7 @@ export const pagination = async (req: Request, res: Response) => {
     const offset = (page - 1) * itemsPerPage;
 
     if (isNaN(page) || page < 1 || isNaN(itemsPerPage) || itemsPerPage < 1) {
-      return res.status(400).json({ error: "Invalid pagination parameters" });
+      return res.status(400).json({ error: "Invalid paginatation parameters" });
     }
 
     const validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
@@ -142,14 +142,14 @@ export const pagination = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid sort parameters" });
     }
 
-    const searchCondition = queries.paginationQuery.searchCondition(searchTerm);
+    const searchCondition = queries.paginatationQuery.searchCondition(searchTerm);
     const searchParams = searchTerm ? new Array(5).fill(`%${searchTerm}%`) : [];
-    const tableQuery = queries.paginationQuery.tableQuery(
+    const tableQuery = queries.paginatationQuery.tableQuery(
       searchCondition,
       sortBy,
       order
     );
-    const countSql = queries.paginationQuery.countQuery(searchCondition);
+    const countSql = queries.paginatationQuery.countQuery(searchCondition);
 
     const [results] = await db.query<User[]>(tableQuery, [
       ...searchParams,
@@ -228,7 +228,9 @@ export const userLogin = async (
           username: user.username,
           isAdmin: user.isAdmin,
         });
+        console.log('Generated Access Token:', accessToken);
         res.cookie("access-token", accessToken, {
+          httpOnly: true,
           maxAge: 60 * 60 * 24 * 30 * 1000,
         });
         res.json({ message: "Login successful" });
@@ -243,12 +245,23 @@ export const userLogin = async (
   }
 };
 
+export const logoutUser = (req: Request, res: Response): void => {
+  try {
+    // Clear the access-token cookie
+    res.clearCookie("access-token");
+    res.status(200).json({ message: "Logout successful" });
+  } catch (err) {
+    console.error("Error logging out:", err);
+    res.status(500).json({ error: "Failed to log out" });
+  }
+};
+
 export default {
   getUser,
   addUser,
   updateUser,
   deleteUser,
-  pagination,
+  paginatation,
   registerUser,
   userLogin,
 };

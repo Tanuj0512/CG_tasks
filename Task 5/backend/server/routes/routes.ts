@@ -4,9 +4,10 @@ import {
   addUser,
   updateUser,
   deleteUser,
-  pagination,
+  paginatation,
   registerUser,
   userLogin,
+  logoutUser
 } from "../controllers/controllers";
 import validateUser from "../validation/validation";
 import upload from "../middleware/fileUpoad";
@@ -18,6 +19,7 @@ router.post("/register", registerUser);
 router.post("/login", userLogin);
 // Protected routes - require authentication
 router.use(verifyToken);
+router.post("/logout", logoutUser);
 
 router
   .route("/users")
@@ -29,6 +31,6 @@ router
   .put(upload.single("file"), validateUser, updateUser)
   .delete(deleteUser);
 
-router.route("/users/pagination").get(pagination);
+router.route("/users/paginatation").get(paginatation);
 
 export default router;

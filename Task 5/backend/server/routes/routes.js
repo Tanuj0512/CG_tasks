@@ -6,5 +6,5 @@ var validation_1 = require("../validation/validation");
 var router = express_1.default.Router();
 router.route("/users").get(controllers_1.getUser).post(validation_1.default, controllers_1.addUser);
 router.route("/users/:id").put(controllers_1.updateUser).delete(controllers_1.deleteUser);
-router.route("/users/pagination").get(controllers_1.pagination);
+router.route("/users/paginatation").get(controllers_1.paginatation);
 exports.default = router;

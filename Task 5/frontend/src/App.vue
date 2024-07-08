@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import User_details from "./components/Emp_details.vue";
 import User_table from "./components/Emp_table.vue";
 import axios from "axios";
-
+import Auth from "./components/Auth.vue"
 
 interface User {
   id?: number;
@@ -12,21 +12,34 @@ interface User {
   dob: string;
   address: string;
   mobile: string;
+  addFile?: string;
 }
 
 const users = ref<User[]>([]);
 const editUser = ref<User | null>(null);
+const isAuthenticated = ref(false);
 
 onMounted(() => {
+  if (isAuthenticated.value) {
+    fetchUsers();
+  }
+});
+
+function fetchUsers() {
   axios
-    .get("/api/users") 
+    .get("/api/users")
     .then((response) => {
       users.value = response.data;
     })
     .catch((error) => {
       console.error("Error fetching users:", error);
     });
-});
+}
+
+function handleAuthSuccess() {
+  isAuthenticated.value = true;
+  fetchUsers();
+}
 
 function addUser(user: User) {
   users.value.push(user);
@@ -51,20 +64,22 @@ function updateUser(updatedUser: User) {
 
 <template>
   <div class="App">
-    <h1>CRUD App</h1>
+    <Auth v-if="!isAuthenticated" @auth-success="handleAuthSuccess" />
+    <div v-else class = "headingAndContent">
+      <h1>CRUD App</h1>
 
-    <div class="container">
-      <div class="form">
-        <User_details
-         @add-user="addUser" />
-      </div>
-      <div class="tablee">
-        <User_table
-          :users="users"
-          @delete-user="deleteUser"
-          @update-user="updateUser"
-          @edit-user="setEditUser"
-        />
+      <div class="container">
+        <div class="form">
+          <User_details @add-user="addUser" />
+        </div>
+        <div class="tablee">
+          <User_table
+            :users="users"
+            @delete-user="deleteUser"
+            @update-user="updateUser"
+            @edit-user="setEditUser"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -77,9 +92,15 @@ function updateUser(updatedUser: User) {
   display: flex;
   flex-direction: column;
   margin: 5vh auto;
-  align-items: center;
+  /* align-items: center; */
   font-family: Arial, Helvetica, sans-serif;
   color: #333;
+}
+.headingAndContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* row-gap: 10vh; */
 }
 
 .container {

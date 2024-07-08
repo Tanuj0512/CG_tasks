@@ -1,6 +1,7 @@
 <template>
   <div>
-    <h3>{{ editUser ? "Edit User" : "Add User" }}</h3>
+   
+     <h3>Add User</h3>
     <form class="user-form" @submit.prevent="handleSubmit">
       <div class="form-group">
         <label for="firstName">First Name <span class="req">*</span></label>
@@ -11,7 +12,6 @@
           placeholder="Enter your First Name"
           v-model="user.firstName"
         />
-        <span class="error-message">{{ errorMessages.firstName }}</span>
       </div>
 
       <div class="form-group">
@@ -23,13 +23,11 @@
           placeholder="Enter your Last Name"
           v-model="user.lastName"
         />
-        <span class="error-message">{{ errorMessages.lastName }}</span>
       </div>
 
       <div class="form-group">
         <label for="dob">Date of Birth <span class="req">*</span></label>
         <input id="dob" class="form-control" type="date" v-model="user.dob" />
-        <span class="error-message">{{ errorMessages.dob }}</span>
       </div>
 
       <div class="form-group">
@@ -41,7 +39,6 @@
           placeholder="Enter your address"
           v-model="user.address"
         />
-        <span class="error-message">{{ errorMessages.address }}</span>
       </div>
 
       <div class="form-group">
@@ -53,12 +50,21 @@
           placeholder="Enter your mobile number"
           v-model="user.mobile"
         />
-        <span class="error-message">{{ errorMessages.mobile }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="addPicture">Add File <span class="req">*</span></label>
+        <input
+          id="addPicture"
+          class="form-control"
+          type="file"
+          @change="handleFileUpload"
+        />
       </div>
 
       <div class="form-but">
         <button class="btn btn-primary" :disabled="isSubmitting">
-          {{ editUser ? "Update User" : "Add User" }}
+          Add User
         </button>
       </div>
     </form>
@@ -77,11 +83,13 @@ interface User {
   dob: string;
   address: string;
   mobile: string;
+  addFile?: File; 
+  
 }
 
-const props = defineProps<{
-  editUser: User | null;
-}>();
+// const props = defineProps<{
+//   editUser: User | null;
+// }>();
 
 // const emit = defineEmits(["add-user", "update-user"]);
 const emit = defineEmits(["add-user"]);
@@ -107,6 +115,12 @@ const isSubmitting = ref(false);
 //   }
 // );
 
+const handleFileUpload = (event: Event) : void => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    user.addFile = target.files[0];
+  }
+}
 const validateUser = async (): Promise<boolean> => {
   try {
     await axios.post("/api/validateUser/", user);
@@ -126,31 +140,6 @@ const validateUser = async (): Promise<boolean> => {
   }
 };
 
-// const handleSubmit = async (): Promise<void> => {
-//   isSubmitting.value = true;
-//   const isValid = await validateUser();
-//   if (!isValid) {
-//     isSubmitting.value = false;
-//     return;
-//   }
-//   try {
-//     let response: AxiosResponse<User>;
-//     if (props.editUser) {
-//       response = await axios.put(`/api/users/${props.editUser.id}`, user);
-//       emit("update-user", response.data);
-//       alert("User updated successfully");
-//     } 
-//     else {
-//       response = await axios.post("/api/users", user);
-//       emit("add-user", response.data);
-//       alert("User added successfully");
-//     }
-//     resetForm();
-//   } catch (error) {
-//     console.error("Error submitting form:", error);
-//   }
-//   isSubmitting.value = false;
-// };
 const handleSubmit = async (): Promise<void> => {
   isSubmitting.value = true;
   const isValid = await validateUser();
@@ -158,8 +147,22 @@ const handleSubmit = async (): Promise<void> => {
     isSubmitting.value = false;
     return;
   }
+  const formData = new FormData();
+  formData.append("firstName", user.firstName);
+  formData.append("lastName", user.lastName);
+  formData.append("dob", user.dob);
+  formData.append("address", user.address);
+  formData.append("mobile", user.mobile);
+  if (user.addFile) {
+    formData.append("profilePicture", user.addFile);
+  }
+
   try {
-    const response = await axios.post("/api/users", user);
+    const response = await axios.post("/api/users", formData,{
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     emit("add-user", response.data);
     alert("User added successfully");
     resetForm();
@@ -185,6 +188,7 @@ form.user-form {
   padding: 3vh;
   border-radius: 10px;
 }
+
 .user-form {
   max-width: 400px;
   margin: 0 auto;
@@ -208,6 +212,25 @@ label {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+input[type="file"].form-control[data-v-3cbff5e5] {
+    padding: 6px 10px;
+    cursor: pointer;
+    background-color: white;
+}
+
+input[type="file"].form-control::file-selector-button {
+  padding: 6px 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+}
+
+input[type="file"].form-control::file-selector-button:hover {
+  background-color: #45a049;
 }
 
 .btn {

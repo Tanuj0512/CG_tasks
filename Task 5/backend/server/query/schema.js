@@ -12,7 +12,7 @@ var updateUserQuery = {
 var deleteUserQuery = {
     deleteUser: "DELETE FROM users WHERE id = ?",
 };
-var paginationQuery = {
+var paginatationQuery = {
     searchCondition: function (searchTerm) {
         return searchTerm
             ? "WHERE firstName LIKE ? OR lastName LIKE ? OR mobile LIKE ? OR address LIKE ? OR dob LIKE ?"
@@ -29,5 +29,5 @@ exports.default = {
     addUserQuery: addUserQuery,
     updateUserQuery: updateUserQuery,
     deleteUserQuery: deleteUserQuery,
-    paginationQuery: paginationQuery,
+    paginatationQuery: paginatationQuery,
 };

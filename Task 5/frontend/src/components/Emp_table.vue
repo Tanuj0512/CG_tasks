@@ -1,6 +1,7 @@
 <template>
+  <h3>Users Data</h3>
   <div class="tableInfo">
-    <h3>Users Data</h3>
+    
     <div class="table-header">
       <div class="search-bar">
         <label>Search Bar</label>
@@ -60,6 +61,7 @@
             <th>Address</th>
             <th>DOB</th>
             <th>Actions</th>
+            <th>Files</th>
           </tr>
         </thead>
         <tbody class="tableBody" v-if="paginatedUsers.length > 0">
@@ -101,6 +103,16 @@
                 class="input-field"
               />
             </td>
+            <td>
+              <span v-if="editIndex !== index">
+                <img
+                  :src="`/uploads/${user.addFile}`"
+                  alt=" Picture"
+                  class="profile-picture"
+                />
+              </span>
+              <input v-else type="file" @change="handleFileChange" />
+            </td>
             <td class="buttons-align">
               <button
                 v-if="editIndex !== index"
@@ -137,10 +149,10 @@
       </table>
     </div>
     <div class="lowerPart">
-      <div class="pagination-controls">
+      <div class="paginatation-controls">
         <span>Showing page {{ currentPage }} of {{ totalPages }}</span>
       </div>
-      <div class="pagination">
+      <div class="paginatation">
         <button @click="changePage(1)" :disabled="currentPage === 1">
           &lt;&lt;
         </button>
@@ -178,6 +190,7 @@ interface User {
   dob: string;
   address: string;
   mobile: string;
+  addFile?: string;
 }
 
 const editableUser = reactive<User>({
@@ -186,13 +199,14 @@ const editableUser = reactive<User>({
   dob: "",
   address: "",
   mobile: "",
+  addFile: "",
 });
 
 const props = defineProps<{
   users: User[];
 }>();
 
-const emit = defineEmits(["update-user", "delete-user"]);
+const emit = defineEmits(["update-user", "delete-user", "edit-user"]);
 
 const editIndex = ref<number | null>(null);
 // const editableUser = reactive<User>({});
@@ -219,16 +233,12 @@ const orderingOptions = [
   { value: "desc", text: "Descending" },
 ];
 
-// watch(
-//   () => props.users,
-//   (newUsers: User[]) => {
-//     filteredUsers.value = newUsers;
-//     totalItems.value = newUsers.length;
-//     totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value);
-//     // console.log("Updated Total Pages:", totalPages.value);
-//   },
-//   { immediate: true }
-// );
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    editableUser.addFile = target.files[0].name;
+  }
+};
 
 watch(
   () => props.users,
@@ -306,7 +316,7 @@ const fetchUsers = async () => {
   };
 
   try {
-    const response = await axios.get("/api/users/pagination", { params });
+    const response = await axios.get("/api/users/paginatation", { params });
     // console.log("API Response:", response.data);
     filteredUsers.value = response.data;
     totalItems.value = parseInt(response.headers["x-total-count"]);
@@ -319,10 +329,7 @@ const fetchUsers = async () => {
   }
 };
 
-// const itemsDropdown = () => {
-//   itemsPerPage.value = parseInt(dropDownField.value);
-//   fetchUsers();
-// };
+
 const itemsDropdown = () => {
   itemsPerPage.value = parseInt(dropDownField.value);
   currentPage.value = 1; // Reset to the first page
@@ -356,13 +363,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.profile-picture {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+}
 .total_count[data-v-61ea5ed0] {
   margin: 20px 0;
   display: flex;
   align-items: center;
 }
 
-.pagination-controls[data-v-61ea5ed0] {
+.paginatation-controls[data-v-61ea5ed0] {
   font-weight: 700;
   display: flex;
   flex-direction: column;
@@ -405,14 +418,14 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.pagination {
+.paginatation {
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 20px 0;
 }
 
-.pagination button {
+.paginatation button {
   margin: 0 5px;
   padding: 8px 12px;
   border: none;
@@ -422,17 +435,17 @@ onMounted(() => {
   /* transition: background-color 0.1s ease, color 0.1s ease; */
 }
 
-.pagination button:disabled {
+.paginatation button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.pagination button:not(:disabled):hover {
+.paginatation button:not(:disabled):hover {
   background-color: #45a049;
   color: white;
 }
 
-.pagination button.active {
+.paginatation button.active {
   font-weight: bold;
   background-color: #45a049;
   color: white;

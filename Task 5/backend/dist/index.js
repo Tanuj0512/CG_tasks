@@ -17,11 +17,13 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const db_1 = __importDefault(require("./config/db"));
 const cors_1 = __importDefault(require("cors"));
 const routes_1 = __importDefault(require("./routes/routes"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const app = (0, express_1.default)();
 const port = 3010;
 app.use((0, cors_1.default)());
 app.use(body_parser_1.default.json());
 app.use(express_1.default.json());
+app.use((0, cookie_parser_1.default)());
 app.use("/api", routes_1.default);
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {

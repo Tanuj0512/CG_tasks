@@ -1,7 +1,6 @@
 <template>
   <div>
-   
-     <h3>Add User</h3>
+    <h3>Add User</h3>
     <form class="user-form" @submit.prevent="handleSubmit">
       <div class="form-group">
         <label for="firstName">First Name <span class="req">*</span></label>
@@ -74,7 +73,9 @@
 <script setup lang="ts">
 import { ref, reactive, watch, defineProps, defineEmits } from "vue";
 import axios from "axios";
-import type {  AxiosResponse } from "axios";
+
+// Set axios defaults to include credentials
+axios.defaults.withCredentials = true;
 
 interface User {
   id?: number;
@@ -83,15 +84,10 @@ interface User {
   dob: string;
   address: string;
   mobile: string;
-  addFile?: File; 
-  
+  addFile?: File;
 }
 
-// const props = defineProps<{
-//   editUser: User | null;
-// }>();
 
-// const emit = defineEmits(["add-user", "update-user"]);
 const emit = defineEmits(["add-user"]);
 const user = reactive<User>({
   firstName: "",
@@ -104,23 +100,14 @@ const user = reactive<User>({
 const errorMessages = reactive<{ [key in keyof User]?: string }>({});
 const isSubmitting = ref(false);
 
-// watch(
-//   () => props.editUser,
-//   (newUser) => {
-//     if (newUser) {
-//       Object.assign(user, newUser);
-//     } else {
-//       resetForm();
-//     }
-//   }
-// );
 
-const handleFileUpload = (event: Event) : void => {
+
+const handleFileUpload = (event: Event): void => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     user.addFile = target.files[0];
   }
-}
+};
 const validateUser = async (): Promise<boolean> => {
   try {
     await axios.post("/api/validateUser/", user);
@@ -158,7 +145,7 @@ const handleSubmit = async (): Promise<void> => {
   }
 
   try {
-    const response = await axios.post("/api/users", formData,{
+    const response = await axios.post("/api/users", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -182,7 +169,10 @@ const resetForm = (): void => {
 };
 </script>
 
-<style scoped>
+<style >
+.form {
+    width: 30%;
+}
 form.user-form {
   background-color: #dbdfd8;
   padding: 3vh;
@@ -215,9 +205,9 @@ label {
 }
 
 input[type="file"].form-control[data-v-3cbff5e5] {
-    padding: 6px 10px;
-    cursor: pointer;
-    background-color: white;
+  padding: 6px 10px;
+  cursor: pointer;
+  background-color: white;
 }
 
 input[type="file"].form-control::file-selector-button {

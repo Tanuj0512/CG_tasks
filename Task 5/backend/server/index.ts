@@ -1,14 +1,14 @@
 import express from "express";
 import bodyParser from "body-parser";
 import db from "./config/db";
-import cors from 'cors';
+// import cors from 'cors';
 import userRoutes from './routes/routes';
 import cookieParser from 'cookie-parser';
 
 const app = express();
 const port = 3010;
 
-app.use(cors())  
+// app.use(cors())  
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
@@ -30,4 +30,4 @@ async function startServer() {
 
 startServer();
 
-//http:localhost:3010/api/users/paginatation?term=Wan&page=2&itemsPerPage=10&sortBy=firstName&order=asc
+//http://localhost:3010/api/users/pagination?term =jo&sortBy=firstName&order=asc&page=1&itemsPerPage=2

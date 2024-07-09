@@ -17,6 +17,7 @@ const verifyToken = (req, res, next) => {
     }
     catch (err) {
         console.error("Error verifying token:", err);
+        res.clearCookie("access-token");
         res.status(403).json({ error: "Invalid token" });
     }
 };

@@ -1,3 +1,5 @@
+
+
 import db from "../config/db";
 import { Request, Response } from "express";
 import queries from "../query/schema";
@@ -123,8 +125,8 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-//search, sort, paginatation
-export const paginatation = async (req: Request, res: Response) => {
+//search, sort, pagination
+export const pagination = async (req: Request, res: Response) => {
   try {
     const searchTerm = (req.query.term as string) || "";
     const sortBy = (req.query.sortBy as string) || "firstName";
@@ -134,7 +136,7 @@ export const paginatation = async (req: Request, res: Response) => {
     const offset = (page - 1) * itemsPerPage;
 
     if (isNaN(page) || page < 1 || isNaN(itemsPerPage) || itemsPerPage < 1) {
-      return res.status(400).json({ error: "Invalid paginatation parameters" });
+      return res.status(400).json({ error: "Invalid pagination parameters" });
     }
 
     const validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
@@ -142,14 +144,14 @@ export const paginatation = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid sort parameters" });
     }
 
-    const searchCondition = queries.paginatationQuery.searchCondition(searchTerm);
+    const searchCondition = queries.paginationQuery.searchCondition(searchTerm);
     const searchParams = searchTerm ? new Array(5).fill(`%${searchTerm}%`) : [];
-    const tableQuery = queries.paginatationQuery.tableQuery(
+    const tableQuery = queries.paginationQuery.tableQuery(
       searchCondition,
       sortBy,
       order
     );
-    const countSql = queries.paginatationQuery.countQuery(searchCondition);
+    const countSql = queries.paginationQuery.countQuery(searchCondition);
 
     const [results] = await db.query<User[]>(tableQuery, [
       ...searchParams,
@@ -261,7 +263,7 @@ export default {
   addUser,
   updateUser,
   deleteUser,
-  paginatation,
+  pagination,
   registerUser,
   userLogin,
 };

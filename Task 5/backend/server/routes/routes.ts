@@ -1,13 +1,16 @@
+
+
 import express from "express";
 import {
   getUser,
   addUser,
   updateUser,
   deleteUser,
-  paginatation,
+  pagination,
   registerUser,
   userLogin,
-  logoutUser
+  
+  
 } from "../controllers/controllers";
 import validateUser from "../validation/validation";
 import upload from "../middleware/fileUpoad";
@@ -19,7 +22,7 @@ router.post("/register", registerUser);
 router.post("/login", userLogin);
 // Protected routes - require authentication
 router.use(verifyToken);
-router.post("/logout", logoutUser);
+
 
 router
   .route("/users")
@@ -31,6 +34,6 @@ router
   .put(upload.single("file"), validateUser, updateUser)
   .delete(deleteUser);
 
-router.route("/users/paginatation").get(paginatation);
+router.route("/users/pagination").get(pagination);
 
 export default router;

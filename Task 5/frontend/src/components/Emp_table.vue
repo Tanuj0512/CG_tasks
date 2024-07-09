@@ -149,10 +149,10 @@
       </table>
     </div>
     <div class="lowerPart">
-      <div class="paginatation-controls">
+      <div class="pagination-controls">
         <span>Showing page {{ currentPage }} of {{ totalPages }}</span>
       </div>
-      <div class="paginatation">
+      <div class="pagination">
         <button @click="changePage(1)" :disabled="currentPage === 1">
           &lt;&lt;
         </button>
@@ -316,14 +316,14 @@ const fetchUsers = async () => {
   };
 
   try {
-    const response = await axios.get("/api/users/paginatation", { params });
-    // console.log("API Response:", response.data);
+    const response = await axios.get("/api/users/pagination", { params });
+    console.log("API Response:", response.data);
     filteredUsers.value = response.data;
     totalItems.value = parseInt(response.headers["x-total-count"]);
     totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value);
-    // console.log("filteredUsers:", filteredUsers.value); // Log filtered users array
-    // console.log("totalItems:", totalItems.value); // Log total items count
-    // console.log("totalPages:", totalPages.value); // Log total pages count
+    console.log("filteredUsers:", filteredUsers.value); // Log filtered users array
+    console.log("totalItems:", totalItems.value); // Log total items count
+    console.log("totalPages:", totalPages.value); // Log total pages count
   } catch (error) {
     console.error("Error fetching users:", error);
   }
@@ -375,7 +375,7 @@ onMounted(() => {
   align-items: center;
 }
 
-.paginatation-controls[data-v-61ea5ed0] {
+.pagination-controls[data-v-61ea5ed0] {
   font-weight: 700;
   display: flex;
   flex-direction: column;
@@ -418,14 +418,14 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.paginatation {
+.pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 20px 0;
 }
 
-.paginatation button {
+.pagination button {
   margin: 0 5px;
   padding: 8px 12px;
   border: none;
@@ -435,17 +435,17 @@ onMounted(() => {
   /* transition: background-color 0.1s ease, color 0.1s ease; */
 }
 
-.paginatation button:disabled {
+.pagination button:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.paginatation button:not(:disabled):hover {
+.pagination button:not(:disabled):hover {
   background-color: #45a049;
   color: white;
 }
 
-.paginatation button.active {
+.pagination button.active {
   font-weight: bold;
   background-color: #45a049;
   color: white;

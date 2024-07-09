@@ -45,7 +45,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.paginatation = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
+exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
 var db_1 = require("../config/db");
 var schema_1 = require("../query/schema");
 //get Users
@@ -177,8 +177,8 @@ var deleteUser = function (req, res) { return __awaiter(void 0, void 0, void 0, 
     });
 }); };
 exports.deleteUser = deleteUser;
-//search, sort, paginatation
-var paginatation = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+//search, sort, pagination
+var pagination = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var searchTerm, sortBy, order, page, itemsPerPage, offset, validSortBy, searchCondition, searchParams, tableQuery, countSql, results, total, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -191,16 +191,16 @@ var paginatation = function (req, res) { return __awaiter(void 0, void 0, void 0
                 itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
                 offset = (page - 1) * itemsPerPage;
                 if (isNaN(page) || page < 1 || isNaN(itemsPerPage) || itemsPerPage < 1) {
-                    return [2 /*return*/, res.status(400).json({ error: "Invalid paginatation parameters" })];
+                    return [2 /*return*/, res.status(400).json({ error: "Invalid pagination parameters" })];
                 }
                 validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
                 if (!validSortBy.includes(sortBy) || !["ASC", "DESC"].includes(order)) {
                     return [2 /*return*/, res.status(400).json({ error: "Invalid sort parameters" })];
                 }
-                searchCondition = schema_1.default.paginatationQuery.searchCondition(searchTerm);
+                searchCondition = schema_1.default.paginationQuery.searchCondition(searchTerm);
                 searchParams = searchTerm ? new Array(5).fill("%".concat(searchTerm, "%")) : [];
-                tableQuery = schema_1.default.paginatationQuery.tableQuery(searchCondition, sortBy, order);
-                countSql = schema_1.default.paginatationQuery.countQuery(searchCondition);
+                tableQuery = schema_1.default.paginationQuery.tableQuery(searchCondition, sortBy, order);
+                countSql = schema_1.default.paginationQuery.countQuery(searchCondition);
                 return [4 /*yield*/, db_1.default.query(tableQuery, __spreadArray(__spreadArray([], searchParams, true), [
                         itemsPerPage,
                         offset,
@@ -222,5 +222,5 @@ var paginatation = function (req, res) { return __awaiter(void 0, void 0, void 0
         }
     });
 }); };
-exports.paginatation = paginatation;
-exports.default = { getUser: exports.getUser, addUser: exports.addUser, updateUser: exports.updateUser, deleteUser: exports.deleteUser, paginatation: exports.paginatation };
+exports.pagination = pagination;
+exports.default = { getUser: exports.getUser, addUser: exports.addUser, updateUser: exports.updateUser, deleteUser: exports.deleteUser, pagination: exports.pagination };

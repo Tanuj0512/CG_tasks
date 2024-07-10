@@ -10,7 +10,7 @@ import {
   registerUser,
   userLogin,
   
-  
+
 } from "../controllers/controllers";
 import validateUser from "../validation/validation";
 import upload from "../middleware/fileUpoad";

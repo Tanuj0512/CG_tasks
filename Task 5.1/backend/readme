@@ -1,0 +1,56 @@
+Flow
+User Login:
+
+User logs in, receives an access token which is stored in a cookie (access-token).
+
+
+Upload Files:
+
+User sends a POST request to /upload with files.
+verifyToken middleware ensures the user is authenticated by verifying the JWT.
+uploadFiles handler uploads files to the server and stores their paths in the database associated with the authenticated user's ID.
+
+
+Fetch Images:
+
+User sends a GET request to /images.
+verifyToken middleware ensures the user is authenticated by verifying the JWT.
+authenticatedUser handler fetches and returns images from the database associated with the authenticated user's ID.
+
+
+
+This middleware (express.static) is used to serve static files such as images, CSS, JavaScript, etc., from the specified directory (uploads). The directory path is constructed using path.join(__dirname, 'uploads'), which ensures that the correct absolute path to the 'uploads' directory is used regardless of the operating system.
+
+'/uploads': Defines the URL path prefix (/uploads) where the static files will be served from. This means that any file in the uploads directory can be accessed via URLs starting with /uploads.
+Summary
+The Express route /uploads/:userId/:fileId is set up to handle GET requests.
+The showImage function fetches the image_path from the database based on userId and fileId, then sends the corresponding file to the client using res.sendFile.
+Static files in the uploads directory are served using express.static, making them accessible via URLs starting with /uploads.
+
+
+
+
+export const showImage = async (req: Request, res: Response) => {
+  const { userId, fileId } = req.params;
+
+  try {
+    const [rows] = await db.query<RowDataPacket[]>(
+      'SELECT image_path FROM images WHERE user_id = ? AND id = ?',
+      [userId, fileId]
+    );
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    const filePath = rows[0].image_path;
+    res.sendFile(path.resolve(filePath), (err) => {
+      if (err) {
+        res.status(404).json({ error: 'File not found' });
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching file:", err);
+    res.status(500).json({ error: 'Failed to fetch file' });
+  }
+}

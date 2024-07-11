@@ -12,9 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutUser = exports.authenticatedUser = exports.uploadFiles = exports.userLogin = exports.registerUser = exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
+exports.logoutUser = exports.showImage = exports.authenticatedUser = exports.uploadFiles = exports.userLogin = exports.registerUser = exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
 const db_1 = __importDefault(require("../config/db"));
 const schema_1 = __importDefault(require("../query/schema"));
+const path_1 = __importDefault(require("path"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jwt_1 = require("../middleware/jwt");
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -210,11 +211,20 @@ const uploadFiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.uploadFiles = uploadFiles;
 const authenticatedUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _b, _c;
     const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
+    const userName = (_c = req.user) === null || _c === void 0 ? void 0 : _c.username;
     try {
         const [rows] = yield db_1.default.query(schema_1.default.fetchImageQuery.fetchImage, [userId]);
-        res.json(rows);
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ error: "No images found for the user" });
+        }
+        const imagePaths = rows.map((row) => row.image_path);
+        res.json({
+            user_id: userId,
+            userName: userName,
+            files: imagePaths,
+        });
     }
     catch (err) {
         console.error("Error fetching images:", err);
@@ -222,9 +232,30 @@ const authenticatedUser = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.authenticatedUser = authenticatedUser;
+const showImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const { fileId } = req.params;
+    const userId = (_d = req.user) === null || _d === void 0 ? void 0 : _d.id;
+    try {
+        const [rows] = yield db_1.default.query("SELECT image_path FROM images WHERE user_id = ? AND id = ?", [userId, fileId]);
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ error: "File not found" });
+        }
+        const filePath = rows[0].image_path;
+        const allFilePath = path_1.default.join(__dirname, "../../uploads", filePath);
+        const apiRoute = "http://localhost:3010/uploads/";
+        const imageUrl = apiRoute + path_1.default.basename(allFilePath);
+        res.status(200).json({ imageUrl });
+    }
+    catch (err) {
+        console.error("Error fetching file:", err);
+        res.status(500).json({ error: "Failed to fetch file" });
+    }
+});
+exports.showImage = showImage;
 const logoutUser = (req, res) => {
-    res.clearCookie('access-token');
-    res.json({ message: 'Logout successful' });
+    res.clearCookie("access-token");
+    res.json({ message: "Logout successful" });
 };
 exports.logoutUser = logoutUser;
 exports.default = {
@@ -237,4 +268,5 @@ exports.default = {
     userLogin: exports.userLogin,
     authenticatedUser: exports.authenticatedUser,
     logoutUser: exports.logoutUser,
+    showImage: exports.showImage,
 };

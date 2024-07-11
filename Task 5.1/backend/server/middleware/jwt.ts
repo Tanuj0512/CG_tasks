@@ -7,7 +7,6 @@ import cookieParser from "cookie-parser";
 interface User {
   id: number;
   username: string;
-  // isAdmin: boolean;
 }
 
 declare global {
@@ -25,7 +24,7 @@ export const verifyToken = (
   next: NextFunction
 ): void => {
   const accessToken = req.cookies["access-token"];
-  console.log('Received Access Token:', accessToken); 
+  // console.log('Received Access Token:', accessToken); 
   if (!accessToken) {
     res.status(401).json({ error: "Access token not provided" });
     return ;
@@ -33,7 +32,7 @@ export const verifyToken = (
 
   try {
     const decoded = verify(accessToken, "secretKey") as User;
-    console.log('Decoded Token:', decoded);
+    // console.log('Decoded Token:', decoded);
 
     
     req.user = decoded; // Attach decoded user information to the request object

@@ -21,7 +21,8 @@ router
     .put(fileUpoad_1.default.single("file"), validation_1.default, crud_1.updateUser)
     .delete(crud_1.deleteUser);
 router.route("/users/pagination").get(crud_1.pagination);
-router.post("/upload/:id", fileUpoad_1.default.array("files", 10), jwt_1.verifyToken, crud_1.uploadFiles);
+router.post("/upload", fileUpoad_1.default.array("files"), jwt_1.verifyToken, crud_1.uploadFiles);
 router.get('/images', jwt_1.verifyToken, crud_1.authenticatedUser);
+router.get('/images/:fileId', crud_1.showImage);
 router.post('/logout', jwt_1.verifyToken, crud_1.logoutUser);
 exports.default = router;

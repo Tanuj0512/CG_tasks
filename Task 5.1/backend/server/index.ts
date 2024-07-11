@@ -4,7 +4,7 @@ import db from "./config/db";
 // import cors from 'cors';
 import userRoutes from './routes/routes';
 import cookieParser from 'cookie-parser';
-
+import path from 'path';
 const app = express();
 const port = 3010;
 
@@ -14,6 +14,9 @@ app.use(express.json());
 app.use(cookieParser());
 //use routes
 app.use("/api", userRoutes);
+
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 //database connection
 async function startServer() {

@@ -9,7 +9,8 @@ import {
   userLogin,
   uploadFiles,
   authenticatedUser,
-  logoutUser
+  logoutUser,
+  showImage
 } from "../controllers/crud";
 import validateUser from "../validation/validation";
 import upload from "../middleware/fileUpoad";
@@ -35,10 +36,16 @@ router
 router.route("/users/pagination").get(pagination);
 
 // New route for multiple file upload without user ID
-router.post("/upload/:id", upload.array("files", 10),verifyToken, uploadFiles);
+router.post("/upload", upload.array("files"),verifyToken, uploadFiles);
 
+//all images
 router.get('/images', verifyToken, authenticatedUser);
+//specific images
+router.get('/images/:fileId', showImage)
 
 // Logout route
 router.post('/logout', verifyToken, logoutUser)
+
+
+
 export default router;

@@ -253,7 +253,7 @@ export const userLogin = async (
 };
 
 // Upload multiple images
-export const uploadFiles =  async (req: Request, res: Response) => {
+export const uploadFiles = async (req: Request, res: Response) => {
   const userId = req.user?.id;
   const files = req.files as Express.Multer.File[];
 
@@ -263,7 +263,10 @@ export const uploadFiles =  async (req: Request, res: Response) => {
 
   try {
     for (const file of files) {
-      const [result] = await db.query<ResultSetHeader>(queries.uploadFileQuery.uploadImage, [userId, file.path]);
+      const [result] = await db.query<ResultSetHeader>(
+        queries.uploadFileQuery.uploadImage,
+        [userId, file.path]
+      );
       if (result.affectedRows === 0) {
         return res.status(500).json({ error: "Failed to upload file" });
       }
@@ -278,21 +281,66 @@ export const uploadFiles =  async (req: Request, res: Response) => {
 
 export const authenticatedUser = async (req: Request, res: Response) => {
   const userId = req.user?.id;
-
+  const userName = req.user?.username;
   try {
-    const [rows] = await db.query<RowDataPacket[]>(queries.fetchImageQuery.fetchImage, [userId]);
-    res.json(rows); // Return images associated with the logged-in user
+    const [rows] = await db.query<RowDataPacket[]>(
+      queries.fetchImageQuery.fetchImage,
+      [userId]
+    );
+
+    // Check if images exist for the authenticated user
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: "No images found for the user" });
+    }
+
+    // Return images associated with the logged-in user
+    const imagePaths = rows.map((row) => row.image_path);
+
+    // Return the user_id with the associated image paths
+    res.json({
+      user_id: userId,
+      userName: userName,
+      files: imagePaths,
+    });
   } catch (err) {
     console.error("Error fetching images:", err);
     res.status(500).json({ error: "Failed to fetch images" });
   }
 };
 
+export const showImage = async (req: Request, res: Response) => {
+  const { fileId } = req.params;
+  const userId = req.user?.id; //for verifying token
+
+  try {
+    const [rows] = await db.query<RowDataPacket[]>(
+      "SELECT image_path FROM images WHERE user_id = ? AND id = ?",
+      [userId, fileId]
+    );
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    const filePath = rows[0].image_path;
+
+    // Ensure the file path is safe and relative to a specific directory
+    const allFilePath = path.join(__dirname, "../../uploads", filePath);
+
+    const apiRoute = "http://localhost:3010/uploads/";
+    const imageUrl = apiRoute + path.basename(allFilePath);
+    res.status(200).json({ imageUrl });
+
+  } catch (err) {
+    console.error("Error fetching file:", err);
+    res.status(500).json({ error: "Failed to fetch file" });
+  }
+};
 
 export const logoutUser = (req: Request, res: Response) => {
   // Clear the access token cookie
-  res.clearCookie('access-token');
-  res.json({ message: 'Logout successful' });
+  res.clearCookie("access-token");
+  res.json({ message: "Logout successful" });
 };
 
 export default {
@@ -304,5 +352,6 @@ export default {
   registerUser,
   userLogin,
   authenticatedUser,
-logoutUser,
+  logoutUser,
+  showImage,
 };

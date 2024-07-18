@@ -1,0 +1,81 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.logoutUser = exports.userLogin = exports.registerUser = void 0;
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const jwt_1 = require("../../middleware/jwt");
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
+const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    try {
+        const hashPassword = yield bcrypt_1.default.hash(password, 10);
+        const registerUser = yield prisma.auth_users.create({
+            data: {
+                username,
+                password: hashPassword,
+            },
+        });
+        res.json({ message: "User Registered", user: registerUser });
+    }
+    catch (err) {
+        console.error("Error registering user:", err);
+        if (err === "ER_DUP_ENTRY") {
+            res.status(409).json({ error: "Username already exists" });
+        }
+        else {
+            res.status(500).json({ error: "Failed to register user" });
+        }
+    }
+});
+exports.registerUser = registerUser;
+const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    try {
+        const user = yield prisma.auth_users.findUnique({
+            where: {
+                username,
+            },
+        });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+        const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
+        if (!isPasswordValid) {
+            res.status(401).json({ error: "Invalid password" });
+            return;
+        }
+        const accessToken = (0, jwt_1.createTokens)({
+            id: user.id,
+            username: user.username,
+        });
+        console.log("Generated Access Token:", accessToken);
+        res.cookie("access-token", accessToken, {
+            httpOnly: true,
+            maxAge: 60 * 60 * 24 * 30 * 1000,
+        });
+        res.json({ message: "Login successful" });
+    }
+    catch (err) {
+        console.error("Error logging in:", err);
+        res.status(500).json({ error: "Failed to log in" });
+    }
+});
+exports.userLogin = userLogin;
+const logoutUser = (req, res) => {
+    res.clearCookie("access-token");
+    res.json({ message: "Logout successful" });
+};
+exports.logoutUser = logoutUser;

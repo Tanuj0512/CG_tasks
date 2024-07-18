@@ -12,14 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutUser = exports.showImage = exports.authenticatedUser = exports.uploadFiles = exports.userLogin = exports.registerUser = exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
+exports.showImage = exports.authenticatedUser = exports.uploadFiles = exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
 const db_1 = __importDefault(require("../config/db"));
-const schema_1 = __importDefault(require("../query/schema"));
+const query_crud_1 = __importDefault(require("../query/query.crud"));
 const path_1 = __importDefault(require("path"));
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const jwt_1 = require("../middleware/jwt");
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const sql = schema_1.default.getUserQuery.getUser;
+    const sql = query_crud_1.default.getUserQuery.getUser;
     try {
         const [result] = yield db_1.default.query(sql);
         console.log("Fetched users:", result);
@@ -33,12 +31,11 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getUser = getUser;
 const addUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { firstName, lastName, dob, address, mobile } = req.body;
-    const file = req.file;
-    const sql = schema_1.default.addUserQuery.addUser;
-    const values = [firstName, lastName, dob, address, mobile, file.path];
+    const sql = query_crud_1.default.addUserQuery.addUser;
+    const values = [firstName, lastName, dob, address, mobile];
     try {
         const result = yield db_1.default.query(sql, values);
-        res.status(200).json({ message: "User added successfully", file: file });
+        res.status(200).json({ message: "User added successfully" });
     }
     catch (err) {
         console.error("Error adding user:", err);
@@ -50,8 +47,8 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { id } = req.params;
         const { firstName, lastName, dob, address, mobile } = req.body;
-        const checkUserSql = schema_1.default.getUserQuery.getUser;
-        const updateUserSql = schema_1.default.updateUserQuery.updateUser;
+        const checkUserSql = query_crud_1.default.getUserQuery.getUser;
+        const updateUserSql = query_crud_1.default.updateUserQuery.updateUser;
         const file = req.file;
         const values = file
             ? [firstName, lastName, dob, address, mobile, file.path, id]
@@ -75,8 +72,8 @@ exports.updateUser = updateUser;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const checkUserSql = schema_1.default.getUserQuery.getUser;
-        const deleteUserSql = schema_1.default.deleteUserQuery.deleteUser;
+        const checkUserSql = query_crud_1.default.getUserQuery.getUser;
+        const deleteUserSql = query_crud_1.default.deleteUserQuery.deleteUser;
         const [userResult] = yield db_1.default.query(checkUserSql, [id]);
         if (userResult.length === 0) {
             return res.status(404).json({ error: "User not found" });
@@ -108,10 +105,10 @@ const pagination = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!validSortBy.includes(sortBy) || !["ASC", "DESC"].includes(order)) {
             return res.status(400).json({ error: "Invalid sort parameters" });
         }
-        const searchCondition = schema_1.default.paginationQuery.searchCondition(searchTerm);
+        const searchCondition = query_crud_1.default.paginationQuery.searchCondition(searchTerm);
         const searchParams = searchTerm ? new Array(5).fill(`%${searchTerm}%`) : [];
-        const tableQuery = schema_1.default.paginationQuery.tableQuery(searchCondition, sortBy, order);
-        const countSql = schema_1.default.paginationQuery.countQuery(searchCondition);
+        const tableQuery = query_crud_1.default.paginationQuery.tableQuery(searchCondition, sortBy, order);
+        const countSql = query_crud_1.default.paginationQuery.countQuery(searchCondition);
         const [results] = yield db_1.default.query(tableQuery, [
             ...searchParams,
             itemsPerPage,
@@ -127,67 +124,6 @@ const pagination = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.pagination = pagination;
-const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, password } = req.body;
-    try {
-        const hash = yield bcrypt_1.default.hash(password, 10);
-        const connection = yield db_1.default.getConnection();
-        const insertUserSql = schema_1.default.registerUserQuery.registerUser;
-        const insertUserValues = [username, hash];
-        yield connection.query(insertUserSql, insertUserValues);
-        connection.release();
-        res.json("User Registered");
-    }
-    catch (err) {
-        console.error("Error registering user:", err);
-        if (err === "ER_DUP_ENTRY") {
-            res.status(409).json({ error: "Username already exists" });
-        }
-        else {
-            res.status(500).json({ error: "Failed to register user" });
-        }
-    }
-});
-exports.registerUser = registerUser;
-const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, password } = req.body;
-    try {
-        const connection = yield db_1.default.getConnection();
-        try {
-            const [rows] = yield connection.execute(schema_1.default.userLoginQuery.userLogin, [username]);
-            if (!rows || rows.length === 0) {
-                res.status(404).json({ error: "User not found" });
-                return;
-            }
-            const user = rows[0];
-            const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
-            if (!isPasswordValid) {
-                res.status(401).json({ error: "Invalid password" });
-                return;
-            }
-            else {
-                const accessToken = (0, jwt_1.createTokens)({
-                    id: user.id,
-                    username: user.username,
-                });
-                console.log("Generated Access Token:", accessToken);
-                res.cookie("access-token", accessToken, {
-                    httpOnly: true,
-                    maxAge: 60 * 60 * 24 * 30 * 1000,
-                });
-                res.json({ message: "Login successful" });
-            }
-        }
-        finally {
-            connection.release();
-        }
-    }
-    catch (err) {
-        console.error("Error logging in:", err);
-        res.status(500).json({ error: "Failed to log in" });
-    }
-});
-exports.userLogin = userLogin;
 const uploadFiles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
@@ -197,7 +133,7 @@ const uploadFiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     try {
         for (const file of files) {
-            const [result] = yield db_1.default.query(schema_1.default.uploadFileQuery.uploadImage, [userId, file.path]);
+            const [result] = yield db_1.default.query(query_crud_1.default.uploadFileQuery.uploadImage, [userId, file.path]);
             if (result.affectedRows === 0) {
                 return res.status(500).json({ error: "Failed to upload file" });
             }
@@ -211,11 +147,11 @@ const uploadFiles = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.uploadFiles = uploadFiles;
 const authenticatedUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
-    const userName = (_c = req.user) === null || _c === void 0 ? void 0 : _c.username;
+    var _a, _b;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+    const userName = (_b = req.user) === null || _b === void 0 ? void 0 : _b.username;
     try {
-        const [rows] = yield db_1.default.query(schema_1.default.fetchImageQuery.fetchImage, [userId]);
+        const [rows] = yield db_1.default.query(query_crud_1.default.fetchImageQuery.fetchImage, [userId]);
         if (!rows || rows.length === 0) {
             return res.status(404).json({ error: "No images found for the user" });
         }
@@ -237,9 +173,9 @@ const authenticatedUser = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.authenticatedUser = authenticatedUser;
 const showImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _a;
     const { fileId } = req.params;
-    const userId = (_d = req.user) === null || _d === void 0 ? void 0 : _d.id;
+    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
     try {
         const [rows] = yield db_1.default.query("SELECT image_path FROM images WHERE user_id = ? AND id = ?", [userId, fileId]);
         if (!rows || rows.length === 0) {
@@ -257,20 +193,11 @@ const showImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.showImage = showImage;
-const logoutUser = (req, res) => {
-    res.clearCookie("access-token");
-    res.json({ message: "Logout successful" });
-};
-exports.logoutUser = logoutUser;
 exports.default = {
     getUser: exports.getUser,
     addUser: exports.addUser,
     updateUser: exports.updateUser,
     deleteUser: exports.deleteUser,
     pagination: exports.pagination,
-    registerUser: exports.registerUser,
-    userLogin: exports.userLogin,
-    authenticatedUser: exports.authenticatedUser,
-    logoutUser: exports.logoutUser,
     showImage: exports.showImage,
 };

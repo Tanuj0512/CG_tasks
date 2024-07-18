@@ -12,10 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutUser = exports.showImage = exports.authenticatedUser = exports.uploadFiles = exports.userLogin = exports.registerUser = exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
+exports.logoutUser = exports.userLogin = exports.registerUser = exports.pagination = exports.deleteUser = exports.updateUser = exports.addUser = exports.getUser = void 0;
 const db_1 = __importDefault(require("../config/db"));
 const schema_1 = __importDefault(require("../query/schema"));
-const path_1 = __importDefault(require("path"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jwt_1 = require("../middleware/jwt");
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -169,8 +168,9 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 const accessToken = (0, jwt_1.createTokens)({
                     id: user.id,
                     username: user.username,
+                    isAdmin: user.isAdmin,
                 });
-                console.log("Generated Access Token:", accessToken);
+                console.log('Generated Access Token:', accessToken);
                 res.cookie("access-token", accessToken, {
                     httpOnly: true,
                     maxAge: 60 * 60 * 24 * 30 * 1000,
@@ -188,78 +188,15 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.userLogin = userLogin;
-const uploadFiles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
-    const files = req.files;
-    if (!files || files.length === 0) {
-        return res.status(400).json({ error: "No files uploaded" });
-    }
-    try {
-        for (const file of files) {
-            const [result] = yield db_1.default.query(schema_1.default.uploadFileQuery.uploadImage, [userId, file.path]);
-            if (result.affectedRows === 0) {
-                return res.status(500).json({ error: "Failed to upload file" });
-            }
-        }
-        res.status(200).json({ message: "Files uploaded successfully" });
-    }
-    catch (err) {
-        console.error("Error uploading files:", err);
-        res.status(500).json({ error: "Failed to upload files" });
-    }
-});
-exports.uploadFiles = uploadFiles;
-const authenticatedUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
-    const userName = (_c = req.user) === null || _c === void 0 ? void 0 : _c.username;
-    try {
-        const [rows] = yield db_1.default.query(schema_1.default.fetchImageQuery.fetchImage, [userId]);
-        if (!rows || rows.length === 0) {
-            return res.status(404).json({ error: "No images found for the user" });
-        }
-        const apiRoute = "http://localhost:3010/uploads/";
-        const imagePaths = rows.map((row) => ({
-            fileId: row.id,
-            filePath: apiRoute + path_1.default.basename(row.image_path),
-        }));
-        res.json({
-            user_id: userId,
-            userName: userName,
-            files: { imagePaths },
-        });
-    }
-    catch (err) {
-        console.error("Error fetching images:", err);
-        res.status(500).json({ error: "Failed to fetch images" });
-    }
-});
-exports.authenticatedUser = authenticatedUser;
-const showImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
-    const { fileId } = req.params;
-    const userId = (_d = req.user) === null || _d === void 0 ? void 0 : _d.id;
-    try {
-        const [rows] = yield db_1.default.query("SELECT image_path FROM images WHERE user_id = ? AND id = ?", [userId, fileId]);
-        if (!rows || rows.length === 0) {
-            return res.status(404).json({ error: "File not found" });
-        }
-        const filePath = rows[0].image_path;
-        const allFilePath = path_1.default.join(__dirname, "../../uploads", filePath);
-        const apiRoute = "http://localhost:3010/uploads/";
-        const imageUrl = apiRoute + path_1.default.basename(allFilePath);
-        res.status(200).json({ imageUrl });
-    }
-    catch (err) {
-        console.error("Error fetching file:", err);
-        res.status(500).json({ error: "Failed to fetch file" });
-    }
-});
-exports.showImage = showImage;
 const logoutUser = (req, res) => {
-    res.clearCookie("access-token");
-    res.json({ message: "Logout successful" });
+    try {
+        res.clearCookie("access-token");
+        res.status(200).json({ message: "Logout successful" });
+    }
+    catch (err) {
+        console.error("Error logging out:", err);
+        res.status(500).json({ error: "Failed to log out" });
+    }
 };
 exports.logoutUser = logoutUser;
 exports.default = {
@@ -270,7 +207,4 @@ exports.default = {
     pagination: exports.pagination,
     registerUser: exports.registerUser,
     userLogin: exports.userLogin,
-    authenticatedUser: exports.authenticatedUser,
-    logoutUser: exports.logoutUser,
-    showImage: exports.showImage,
 };

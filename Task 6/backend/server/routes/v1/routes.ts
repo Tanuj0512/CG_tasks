@@ -1,56 +1,49 @@
-// import express from "express";
-// import {
-//   getUser,
-//   addUser,
-//   updateUser,
-//   deleteUser,
-//   pagination,
-//   uploadFiles,
-//   authenticatedUser,
-//   showImage,
-// } from "../../controllers/v1/controller.crud";
-// // import {
-// //   registerUser,
-// //   logoutUser,
-// //   userLogin,
-// // } from "../../controllers/v1/controller.auth";
-// import validateUser from "../../validation/validation";
-// import upload from "../../middleware/fileUpoad";
-// import { verifyToken } from "../../middleware/jwt";
+import express from "express";
+import {
+  getUser,
+  addUser,
+  updateUser,
+  deleteUser,
+  pagination,
+  uploadFiles,
+  showImages,
+} from "../../controllers/v1/controller.crud";
 
-// const router = express.Router();
+import {
+  registerUser,
+  userLogin,
+  logoutUser,
+} from "../../controllers/v1/controller.auth";
+import validateUserV1 from "../../validation/v1/validation";
+import upload from "../../middleware/fileUpoad";
+import { verifyToken } from "../../middleware/jwt";
 
-// // router.post("/register", registerUser);
-// // router.post("/login", userLogin);
-// // Protected routes - require authentication
-// router.use(verifyToken);
+const router = express.Router();
 
-// // Get all users, Add users
-// router
-//   .route("/users")
-//   .get(getUser)
-//   .post(upload.single("file"), validateUser, addUser);
+router.post("/register", registerUser);
+router.post("/login", userLogin);
+// Protected routes - require authentication
+router.use(verifyToken);
 
+// Get all users, Add users
+router.route("/users").get(getUser).post(validateUserV1, verifyToken, addUser);
 
-// // Update user, Delete user
-// router
-//   .route("/users/:id")
-//   .put(upload.single("file"), validateUser, updateUser)
-//   .delete(deleteUser);
+// Update user, Delete user
+router
+  .route("/users/:id")
+  .put(validateUserV1, verifyToken, updateUser)
+  .delete(verifyToken, deleteUser);
 
-// //Pagination
-// router.route("/users/pagination").get(pagination);
+//Pagination
+router.route("/users/pagination").get(verifyToken, pagination);
 
-// // New route for multiple file upload without user ID
-// router.post("/upload", upload.array("files"), verifyToken, uploadFiles);
+// New route for multiple file upload without user ID
+router.post("/upload", upload.array("files"), verifyToken, uploadFiles);
 
-// // All images
-// router.get("/images", verifyToken, authenticatedUser);
+// All images
+router.get("/images", verifyToken, showImages);
 
-// // Specific images
-// router.get("/images/:fileId", showImage);
+// Logout route
+router.post("/logout", verifyToken, logoutUser);
 
-// // Logout route
-// // router.post("/logout", verifyToken, logoutUser);
-
-// export default router;
+export default router;

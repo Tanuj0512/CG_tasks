@@ -1,123 +1,98 @@
-import db from "../../config/db";
+import { PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import queries from "../../query/query.crud";
-import { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import path from "path";
 
+const prisma = new PrismaClient();
 
-
-interface User extends RowDataPacket {
-  // id?: number;
-  firstName: string;
-  lastName: string;
-  dob: string;
-  address: string;
-  mobile: string;
-}
-
-
-interface CountResult extends RowDataPacket {
-  affectedRows: number;
-}
-
-
-
-//get Users
+// Get all users
 export const getUser = async (req: Request, res: Response) => {
-  const sql = queries.getUserQuery.getUser;
   try {
-    const [result] = await db.query(sql);
-    // console.log("Fetched users:", result);
-    res.status(200).json(result);
+    const users = await prisma.users.findMany();
+    res.status(200).json(users);
   } catch (err) {
-    console.error("Error fetching users:", err);
+    console.log("Error fetching users: ", err);
     res.status(424).json({ error: "Failed to fetch users" });
   }
 };
 
-//add User
+// Add Users
 export const addUser = async (req: Request, res: Response) => {
-  const { firstName, lastName, dob, address, mobile } = req.body as User;
-  // const file = req.file as Express.Multer.File;
-  const sql = queries.addUserQuery.addUser;
-  const values = [firstName, lastName, dob, address, mobile];
+  const { firstName, lastName, dob } = req.body;
 
   try {
-    const result = await db.query(sql, values);
-    res.status(200).json({ message: "User added successfully" });
+    const newUser = await prisma.users.create({
+      data: {
+        firstName,
+        lastName,
+        dob: new Date(dob),
+      },
+    });
+    res.status(200).json({ message: "User added successfully", user: newUser });
   } catch (err) {
     console.error("Error adding user:", err);
     res.status(422).json({ error: "Failed to add user" });
   }
 };
 
-//update user
+// Update Users
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, dob, address, mobile } = req.body as User;
-    const checkUserSql = queries.getUserQuery.getUser;
-    const updateUserSql = queries.updateUserQuery.updateUser;
-    const file = req.file as Express.Multer.File | undefined;
-    const values = file
-      ? [firstName, lastName, dob, address, mobile, file.path, id]
-      : [firstName, lastName, dob, address, mobile, id];
+    const { firstName, lastName, dob } = req.body;
 
-    const [userResult] = await db.query<User[]>(checkUserSql, [id]);
+    // Check if user exists
+    const existingUser = await prisma.users.findUnique({
+      where: { id: Number(id) },
+    });
 
-    if (userResult.length === 0) {
+    if (!existingUser) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const [updateResult] = await db.query<ResultSetHeader>(
-      updateUserSql,
-      values
-    );
+    // Update user
+    const updatedUser = await prisma.users.update({
+      where: { id: Number(id) },
+      data: {
+        firstName,
+        lastName,
+        dob: new Date(dob)
+      },
+    });
 
-    if (updateResult.affectedRows === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    res.json({ id, firstName, lastName, dob, address, mobile });
+    res.json(updatedUser);
   } catch (err) {
     console.error("Error updating user:", err);
     res.status(424).json({ error: "Failed to update user" });
   }
 };
 
+// Delete User
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const checkUserSql = queries.getUserQuery.getUser;
-    const deleteUserSql = queries.deleteUserQuery.deleteUser;
+    const userExist = await prisma.users.findUnique({
+      where: { id: Number(id) },
+    });
 
-    // Check if the user exists
-    const [userResult] = await db.query<User[]>(checkUserSql, [id]);
-
-    if (userResult.length === 0) {
+    if (!userExist) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Delete the user
-    const [deleteResult] = await db.query<ResultSetHeader>(deleteUserSql, [id]);
-
-    if (deleteResult.affectedRows === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    res.status(200).send("User deleted");
+    const deletedUser = await prisma.users.delete({
+      where: { id: Number(id) },
+    });
+    res.json({ deletedUser });
   } catch (err) {
     console.error("Error deleting user:", err);
     res.status(424).json({ error: "Failed to delete user" });
   }
 };
 
-//search, sort, pagination
 export const pagination = async (req: Request, res: Response) => {
   try {
     const searchTerm = (req.query.term as string) || "";
     const sortBy = (req.query.sortBy as string) || "firstName";
-    const order = req.query.order === "desc" ? "DESC" : "ASC";
+    const order = req.query.order === "desc" ? "desc" : "asc";
     const page = parseInt(req.query.page as string) || 1;
     const itemsPerPage = parseInt(req.query.itemsPerPage as string) || 10;
     const offset = (page - 1) * itemsPerPage;
@@ -126,36 +101,37 @@ export const pagination = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid pagination parameters" });
     }
 
-    const validSortBy = ["firstName", "lastName", "dob", "address", "mobile"];
-    if (!validSortBy.includes(sortBy) || !["ASC", "DESC"].includes(order)) {
+    const validSortBy = ["firstName", "lastName", "dob"];
+    if (!validSortBy.includes(sortBy) || !["asc", "desc"].includes(order)) {
       return res.status(400).json({ error: "Invalid sort parameters" });
     }
 
-    const searchCondition = queries.paginationQuery.searchCondition(searchTerm);
-    const searchParams = searchTerm ? new Array(5).fill(`%${searchTerm}%`) : [];
-    const tableQuery = queries.paginationQuery.tableQuery(
-      searchCondition,
-      sortBy,
-      order
-    );
-    const countSql = queries.paginationQuery.countQuery(searchCondition);
+    const searchCondition = searchTerm ? {
+      OR: [
+        { firstName: { contains: searchTerm, mode: 'insensitive' } },
+        { lastName: { contains: searchTerm, mode: 'insensitive' } }
+      ]
+    } : {};
 
-    const [results] = await db.query<User[]>(tableQuery, [
-      ...searchParams,
-      itemsPerPage,
-      offset,
+    const [results, count] = await Promise.all([
+      prisma.users.findMany({
+        where: searchCondition,
+        orderBy: { [sortBy]: order },
+        skip: offset,
+        take: itemsPerPage,
+      }),
+      prisma.users.count({
+        where: searchCondition,
+      }),
     ]);
-    const [[{ total }]] = await db.query<CountResult[]>(countSql, searchParams);
 
-    res.setHeader("X-Total-Count", total.toString());
+    res.setHeader("X-Total-Count", count.toString());
     res.json(results);
   } catch (error) {
     console.error("Unexpected error", error);
     res.status(500).json({ error: "Unexpected error occurred" });
   }
 };
-
-
 
 // Upload multiple images
 export const uploadFiles = async (req: Request, res: Response) => {
@@ -165,17 +141,24 @@ export const uploadFiles = async (req: Request, res: Response) => {
   if (!files || files.length === 0) {
     return res.status(400).json({ error: "No files uploaded" });
   }
-
   try {
-    for (const file of files) {
-      const [result] = await db.query<ResultSetHeader>(
-        queries.uploadFileQuery.uploadImage,
-        [userId, file.path]
-      );
-      if (result.affectedRows === 0) {
-        return res.status(500).json({ error: "Failed to upload file" });
-      }
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
+    const uploadFiles = files.map(async (file) => {
+      await prisma.images.create({
+        data: {
+          image_path: file.path,
+          users: { connect: { id: userId } }, // Connect the image to the user
+        },
+      });
+    });
+
+    await Promise.all(uploadFiles);
 
     res.status(200).json({ message: "Files uploaded successfully" });
   } catch (err) {
@@ -184,27 +167,29 @@ export const uploadFiles = async (req: Request, res: Response) => {
   }
 };
 
-export const authenticatedUser = async (req: Request, res: Response) => {
+
+// Show images path
+export const showImages = async (req: Request, res: Response) => {
   const userId = req.user?.id;
   const userName = req.user?.username;
 
   try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      queries.fetchImageQuery.fetchImage,
-      [userId]
-    );
+    const images = await prisma.images.findMany({
+      where: { user_id : userId},
+      select: { id: true, image_path: true },
+    });
 
     // Check if images exist for the authenticated user
-    if (!rows || rows.length === 0) {
+    if (!images || images.length === 0) {
       return res.status(404).json({ error: "No images found for the user" });
     }
 
     const apiRoute = "http://localhost:3010/uploads/";
 
     // Return images associated with the logged-in user
-    const imagePaths = rows.map((row) => ({
-      fileId: row.id,
-      filePath: apiRoute + path.basename(row.image_path),
+    const imagePaths = images.map((image) => ({
+      fileId: image.id,
+      filePath:  image.image_path ? apiRoute + path.basename(image.image_path) : null,
     }));
 
     // Return the user_id with the associated image paths
@@ -217,46 +202,4 @@ export const authenticatedUser = async (req: Request, res: Response) => {
     console.error("Error fetching images:", err);
     res.status(500).json({ error: "Failed to fetch images" });
   }
-};
-
-export const showImage = async (req: Request, res: Response) => {
-  const { fileId } = req.params;
-  const userId = req.user?.id; //for verifying token
-
-  try {
-    const [rows] = await db.query<RowDataPacket[]>(
-      "SELECT image_path FROM images WHERE user_id = ? AND id = ?",
-      [userId, fileId]
-    );
-
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({ error: "File not found" });
-    }
-
-    const filePath = rows[0].image_path;
-
-    // Ensure the file path is safe and relative to a specific directory
-    const allFilePath = path.join(__dirname, "../../uploads", filePath);
-
-    const apiRoute = "http://localhost:3010/uploads/";
-    const imageUrl = apiRoute + path.basename(allFilePath);
-    res.status(200).json({ imageUrl });
-  } catch (err) {
-    console.error("Error fetching file:", err);
-    res.status(500).json({ error: "Failed to fetch file" });
-  }
-};
-
-
-
-
-
-
-export default {
-  getUser,
-  addUser,
-  updateUser,
-  deleteUser,
-  pagination,
-  showImage,
 };

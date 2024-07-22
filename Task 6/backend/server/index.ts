@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import db from "./config/db";
 // import cors from 'cors';
-// import userRoutesV1 from "./routes/v1/routes";
+import userRoutesV1 from "./routes/v1/routes";
 import userRoutesV2 from "./routes/v2/routes";
 import cookieParser from "cookie-parser";
 import path from "path";
@@ -18,35 +18,28 @@ app.use(express.json());
 app.use(cookieParser());
 
 //use routes
-// app.use("/api", userRoutesV1);
+app.use("/api/v1", userRoutesV1);
 app.use("/api/v2", userRoutesV2);
 
 // Serve static files from the 'uploads' directory
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
-//database connection
-// async function startServer() {
-//   try {
-//     await db.getConnection;
-//     console.log('Connected to the database');
-//     app.listen(port, () => {
-//       console.log(`Server running on port ${port}`);
-//     });
-//   } catch (err) {
-//     console.error('Failed to start the server:', err);
-//   }
-// }
-
-//Prisma connections
 async function startServer() {
   try {
+    // Connect to the existing database
+    await db.getConnection();
+    console.log('Connected to the existing database');
+
+    // Connect to Prisma
     await prisma.$connect();
-    console.log("Connected to the database");
+    console.log('Connected to Prisma');
+
+    // Start the server
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
   } catch (err) {
-    console.error("Failed to start the server:", err);
+    console.error('Failed to start the server:', err);
   }
 }
 

@@ -24,14 +24,13 @@ model images {
 
 model users {
   id         Int       @id @default(autoincrement())
-  firstName  String?   @db.VarChar(255)
-  lastName   String?   @db.VarChar(255)
-  dob        DateTime? @db.Date
-  address    String    @db.VarChar(255)
-  mobile     String    @db.VarChar(255)
+  firstName  String    @db.VarChar(255)
+  lastName   String    @db.VarChar(255)
+  dob        DateTime  @db.Date
+  address    String?   @db.VarChar(255)
+  mobile     String?   @db.VarChar(255)
   created_at DateTime? @default(now()) @db.Timestamp(0)
   document   String?   @db.VarChar(255)
   // filePath   String?   @db.VarChar(255)
   images     images[]
-      
 }

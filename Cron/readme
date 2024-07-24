@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "status": "Pending",
+    "description": "Initial setup of the project.",
+    "date": "2024-07-01"
+  },
+  {
+    "id": 2,
+    "status": "Abort",
+    "description": "Developing the authentication module.",
+    "date": "2024-07-03"
+  },
+  {
+    "id": 3,
+    "status": "Completed",
+    "description": "Implemented JWT authentication.",
+    "date": "2024-07-07"
+  },
+  {
+    "id": 4,
+    "status": "Pending",
+    "description": "Designing the user interface.",
+    "date": "2024-07-10"
+  },
+  {
+    "id": 5,
+    "status": "Abort",
+    "description": "Integrating with the backend API.",
+    "date": "2024-07-12"
+  },
+  {
+    "id": 6,
+    "status": "Completed",
+    "description": "Finalizing the CRUD operations.",
+    "date": "2024-07-15"
+  },
+  {
+    "id": 7,
+    "status": "Pending",
+    "description": "Setting up the testing environment.",
+    "date": "2024-07-17"
+  },
+  {
+    "id": 8,
+    "status": "Abort",
+    "description": "Writing unit tests for authentication.",
+    "date": "2024-07-20"
+  },
+  {
+    "id": 9,
+    "status": "Completed",
+    "description": "Deploying the application to staging.",
+    "date": "2024-07-22"
+  },
+  {
+    "id": 10,
+    "status": "Pending",
+    "description": "Preparing documentation and final review.",
+    "date": "2024-07-25"
+  }
+]

@@ -1,0 +1,43 @@
+{
+  "countries": [
+    { "name": "India", "code": "IN" },
+    { "name": "United States", "code": "US" },
+    { "name": "Canada", "code": "CA" },
+    { "name": "Mexico", "code": "MX" },
+    { "name": "United Kingdom", "code": "GB" },
+    { "name": "Australia", "code": "AU" }
+  ],
+  
+  "states": {
+    "IN": [
+      { "name": "Maharashtra", "code": "MH" },
+      { "name": "Delhi", "code": "DL" },
+      { "name": "Punjab", "code": "PU" }
+    ],
+    "US": [
+      { "name": "California", "code": "CA" },
+      { "name": "Texas", "code": "TX" },
+      { "name": "Florida", "code": "FL" }
+    ],
+    "CA": [
+      { "name": "Ontario", "code": "ON" },
+      { "name": "Quebec", "code": "QC" },
+      { "name": "British Columbia", "code": "BC" }
+    ],
+    "MX": [
+      { "name": "Chihuahua", "code": "CH" },
+      { "name": "Sonora", "code": "SO" },
+      { "name": "Jalisco", "code": "JA" }
+    ],
+    "GB": [
+      { "name": "England", "code": "ENG" },
+      { "name": "Scotland", "code": "SCO" },
+      { "name": "Wales", "code": "WAL" }
+    ],
+    "AU": [
+      { "name": "New South Wales", "code": "NSW" },
+      { "name": "Victoria", "code": "VIC" },
+      { "name": "Queensland", "code": "QLD" }
+    ]
+  }
+}

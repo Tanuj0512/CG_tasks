@@ -1,33 +1,12 @@
-# dropdown
+Summary
 
-This template should help get you started developing with Vue 3 in Vite.
+Interfaces define the structure of the data.
+State initializes the dropdown data and selected values.
+Getters allow you to compute derived state values, such as filtering states based on the selected country.
+Actions provide methods to change the selected country and state.
 
-## Recommended IDE Setup
+Here's how the store works in practice:
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
+When a user selects a country, the setSelectedCountry action updates the selectedCountry.
+When a user selects a state, the setSelectedState action updates the selectedState.
+The filteredStates getter dynamically provides the list of states for the selected country, ensuring the UI is updated accordingly.

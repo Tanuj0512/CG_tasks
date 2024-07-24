@@ -1,44 +1,136 @@
 {
-    "countries": [
-      { "name": "India", "code": "IN" },
-      { "name": "United States", "code": "US" },
-      { "name": "Canada", "code": "CA" },
-      { "name": "Mexico", "code": "MX" },
-      { "name": "United Kingdom", "code": "GB" },
-      { "name": "Australia", "code": "AU" }
+  "countries": [
+    { "name": "India", "code": "IN" },
+    { "name": "United States", "code": "US" },
+    { "name": "Canada", "code": "CA" },
+    { "name": "Mexico", "code": "MX" },
+    { "name": "United Kingdom", "code": "GB" },
+    { "name": "Australia", "code": "AU" }
+  ],
+
+  "states": {
+    "IN": [
+      { "name": "Maharashtra", "code": "MH" },
+      { "name": "Delhi", "code": "DL" },
+      { "name": "Punjab", "code": "PU" }
     ],
-    
-    "states": {
-      "IN": [
-        { "name": "Maharashtra", "code": "MH" },
-        { "name": "Delhi", "code": "DL" },
-        { "name": "Punjab", "code": "PU" }
-      ],
-      "US": [
-        { "name": "California", "code": "CA" },
-        { "name": "Texas", "code": "TX" },
-        { "name": "Florida", "code": "FL" }
-      ],
-      "CA": [
-        { "name": "Ontario", "code": "ON" },
-        { "name": "Quebec", "code": "QC" },
-        { "name": "British Columbia", "code": "BC" }
-      ],
-      "MX": [
-        { "name": "Chihuahua", "code": "CH" },
-        { "name": "Sonora", "code": "SO" },
-        { "name": "Jalisco", "code": "JA" }
-      ],
-      "GB": [
-        { "name": "England", "code": "ENG" },
-        { "name": "Scotland", "code": "SCO" },
-        { "name": "Wales", "code": "WAL" }
-      ],
-      "AU": [
-        { "name": "New South Wales", "code": "NSW" },
-        { "name": "Victoria", "code": "VIC" },
-        { "name": "Queensland", "code": "QLD" }
-      ]
-    }
+    "US": [
+      { "name": "California", "code": "CA" },
+      { "name": "Texas", "code": "TX" },
+      { "name": "Florida", "code": "FL" }
+    ],
+    "CA": [
+      { "name": "Ontario", "code": "ON" },
+      { "name": "Quebec", "code": "QC" },
+      { "name": "British Columbia", "code": "BC" }
+    ],
+    "MX": [
+      { "name": "Chihuahua", "code": "CH" },
+      { "name": "Sonora", "code": "SO" },
+      { "name": "Jalisco", "code": "JA" }
+    ],
+    "GB": [
+      { "name": "England", "code": "ENG" },
+      { "name": "Scotland", "code": "SCO" },
+      { "name": "Wales", "code": "WAL" }
+    ],
+    "AU": [
+      { "name": "New South Wales", "code": "NSW" },
+      { "name": "Victoria", "code": "VIC" },
+      { "name": "Queensland", "code": "QLD" }
+    ]
+  },
+
+  "cities": {
+    "MH": [
+      { "name": "Mumbai", "code": "MUM" },
+      { "name": "Pune", "code": "PUN" },
+      { "name": "Nagpur", "code": "NAG" }
+    ],
+    "DL": [
+      { "name": "New Delhi", "code": "ND" },
+      { "name": "Dwarka", "code": "DW" },
+      { "name": "Rohini", "code": "ROH" }
+    ],
+    "PU": [
+      { "name": "Ludhiana", "code": "LUH" },
+      { "name": "Amritsar", "code": "AMR" },
+      { "name": "Jalandhar", "code": "JAL" }
+    ],
+    "CA": [
+      { "name": "Los Angeles", "code": "LA" },
+      { "name": "San Francisco", "code": "SF" },
+      { "name": "San Diego", "code": "SD" }
+    ],
+    "TX": [
+      { "name": "Houston", "code": "HOU" },
+      { "name": "Dallas", "code": "DAL" },
+      { "name": "Austin", "code": "AUS" }
+    ],
+    "FL": [
+      { "name": "Miami", "code": "MIA" },
+      { "name": "Orlando", "code": "ORL" },
+      { "name": "Tampa", "code": "TPA" }
+    ],
+    "ON": [
+      { "name": "Toronto", "code": "TOR" },
+      { "name": "Ottawa", "code": "OTT" },
+      { "name": "Mississauga", "code": "MIS" }
+    ],
+    "QC": [
+      { "name": "Montreal", "code": "MON" },
+      { "name": "Quebec City", "code": "QUE" },
+      { "name": "Laval", "code": "LAV" }
+    ],
+    "BC": [
+      { "name": "Vancouver", "code": "VAN" },
+      { "name": "Victoria", "code": "VIC" },
+      { "name": "Surrey", "code": "SUR" }
+    ],
+    "CH": [
+      { "name": "Chihuahua City", "code": "CHIH" },
+      { "name": "Juarez", "code": "JUA" },
+      { "name": "Delicias", "code": "DEL" }
+    ],
+    "SO": [
+      { "name": "Hermosillo", "code": "HER" },
+      { "name": "Ciudad Obregon", "code": "CO" },
+      { "name": "Nogales", "code": "NOG" }
+    ],
+    "JA": [
+      { "name": "Guadalajara", "code": "GDL" },
+      { "name": "Zapopan", "code": "ZAP" },
+      { "name": "Puerto Vallarta", "code": "PV" }
+    ],
+    "ENG": [
+      { "name": "London", "code": "LON" },
+      { "name": "Manchester", "code": "MAN" },
+      { "name": "Birmingham", "code": "BIR" }
+    ],
+    "SCO": [
+      { "name": "Edinburgh", "code": "EDI" },
+      { "name": "Glasgow", "code": "GLA" },
+      { "name": "Aberdeen", "code": "ABE" }
+    ],
+    "WAL": [
+      { "name": "Cardiff", "code": "CAR" },
+      { "name": "Swansea", "code": "SWA" },
+      { "name": "Newport", "code": "NEW" }
+    ],
+    "NSW": [
+      { "name": "Sydney", "code": "SYD" },
+      { "name": "Newcastle", "code": "NEW" },
+      { "name": "Wollongong", "code": "WOL" }
+    ],
+    "VIC": [
+      { "name": "Melbourne", "code": "MEL" },
+      { "name": "Geelong", "code": "GEE" },
+      { "name": "Ballarat", "code": "BAL" }
+    ],
+    "QLD": [
+      { "name": "Brisbane", "code": "BRI" },
+      { "name": "Gold Coast", "code": "GOL" },
+      { "name": "Cairns", "code": "CAI" }
+    ]
   }
-  
+}
